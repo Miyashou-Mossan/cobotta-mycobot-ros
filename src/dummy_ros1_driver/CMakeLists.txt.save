@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.0.2)
 project(dummy_ros1_driver)
 
@@ -30,18 +29,3 @@ install(TARGETS dummy_ros1_driver
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-add_executable(cobotta_tcp_send_test
-  src/cobotta_tcp_send_test.cpp
-)
-
-target_link_libraries(cobotta_tcp_send_test
-  ${catkin_LIBRARIES}
-)
-
-add_executable(jointstate_tcp_sender
-  src/jointstate_tcp_sender.cpp
-)
-
-target_link_libraries(jointstate_tcp_sender
-  ${catkin_LIBRARIES}
-)
