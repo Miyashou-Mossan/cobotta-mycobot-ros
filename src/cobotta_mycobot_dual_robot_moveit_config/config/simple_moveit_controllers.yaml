@@ -1,0 +1,40 @@
+controller_list:
+  - name: cobotta_arm_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: True
+    joints:
+      - cobotta_joint_1
+      - cobotta_joint_2
+      - cobotta_joint_3
+      - cobotta_joint_4
+      - cobotta_joint_5
+      - cobotta_joint_6
+  - name: mycobot_arm_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: True
+    joints:
+      - mycobot_joint1
+      - mycobot_joint2
+      - mycobot_joint3
+      - mycobot_joint4
+      - mycobot_joint5
+      - mycobot_joint6
+  - name: dual_arm_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: True
+    joints:
+      - cobotta_joint_1
+      - cobotta_joint_2
+      - cobotta_joint_3
+      - cobotta_joint_4
+      - cobotta_joint_5
+      - cobotta_joint_6
+      - mycobot_joint1
+      - mycobot_joint2
+      - mycobot_joint3
+      - mycobot_joint4
+      - mycobot_joint5
+      - mycobot_joint6
