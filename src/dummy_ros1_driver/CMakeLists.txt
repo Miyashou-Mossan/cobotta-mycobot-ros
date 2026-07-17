@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.0.2)
+project(dummy_ros1_driver)
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  sensor_msgs
+  trajectory_msgs
+)
+
+catkin_package(
+  INCLUDE_DIRS include
+)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+)
+
+add_executable(dummy_ros1_driver
+  src/dummy_ros1_driver.cpp
+  src/tcpip.cpp
+)
+
+target_link_libraries(dummy_ros1_driver
+  ${catkin_LIBRARIES}
+)
+
+install(TARGETS dummy_ros1_driver
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+add_executable(cobotta_tcp_send_test
+  src/cobotta_tcp_send_test.cpp
+)
+
+target_link_libraries(cobotta_tcp_send_test
+  ${catkin_LIBRARIES}
+)
