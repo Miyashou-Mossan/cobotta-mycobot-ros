@@ -35,11 +35,12 @@ class GraspPointToPose:
         pose.pose.position.y = point.y
         pose.pose.position.z = point.z
 
-        # 仮の姿勢：回転なし
+        # 試験姿勢：手先のZ軸を紙面方向（鉛直下向き）へ向ける
+        # Y軸回りに180度回転
         pose.pose.orientation.x = 0.0
-        pose.pose.orientation.y = 0.0
+        pose.pose.orientation.y = 1.0
         pose.pose.orientation.z = 0.0
-        pose.pose.orientation.w = 1.0
+        pose.pose.orientation.w = 0.0
 
         self.publisher.publish(pose)
 
