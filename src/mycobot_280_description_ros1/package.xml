@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mycobot_280_description_ros1</name>
+  <version>0.0.1</version>
+  <description>ROS1 URDF description package for the myCobot 280.</description>
+
+  <maintainer email="maeda@example.com">maeda</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz</exec_depend>
+  <exec_depend>urdf</exec_depend>
+
+  <export/>
+</package>
