@@ -1,0 +1,33 @@
+<launch>
+  <!-- 紙中心位置 [m] -->
+  <arg name="paper_center_x" default="0.250" />
+  <arg name="paper_center_y" default="0.000" />
+  <arg name="paper_center_z" default="0.006" />
+
+  <!-- Unity座標系の把持点をROS座標系へ変換 -->
+  <node
+    pkg="origami_grasp_bridge"
+    type="unity_to_ros_point.py"
+    name="unity_to_ros_point"
+    output="screen">
+
+    <param
+      name="paper_center_x"
+      value="$(arg paper_center_x)" />
+
+    <param
+      name="paper_center_y"
+      value="$(arg paper_center_y)" />
+
+    <param
+      name="paper_center_z"
+      value="$(arg paper_center_z)" />
+  </node>
+
+  <!-- geometry_msgs/PointをPoseStampedへ変換 -->
+  <node
+    pkg="origami_grasp_bridge"
+    type="grasp_point_to_pose.py"
+    name="grasp_point_to_pose"
+    output="screen" />
+</launch>
