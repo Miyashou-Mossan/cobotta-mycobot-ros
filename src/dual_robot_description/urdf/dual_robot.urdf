@@ -11,7 +11,7 @@
   <joint name="cobotta_joint_w" type="fixed">
     <parent link="world" />
     <child link="cobotta_base_link" />
-    <origin xyz="0 0 0.025" rpy="0 0 0" />
+    <origin xyz="0 0 0.022" rpy="0 0 0" />
   </joint>
   <link name="cobotta_base_link">
     <visual>
@@ -278,17 +278,22 @@
     <child link="cobotta_gripper_base" />
     <origin rpy="0.000000 0.000000 0.000000" xyz="0.000000 0.000000 0.0000000" />
   </joint>
+
   <link name="cobotta_left_finger">
     <visual>
-      <origin rpy="0.000000 0.000000 0.000000" xyz="0.000000 0.000000 -0.060000" />
+      <origin xyz="-0.008 0 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
-        <mesh filename="package://denso_cobotta_descriptions/cobotta_description/left_finger.dae" scale="1 1 1" />
+        <mesh
+          filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"
+          scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0.000000 0.000000 -0.060000" />
+      <origin xyz="-0.008 0 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
-        <mesh filename="package://denso_cobotta_descriptions/cobotta_description/left_finger.dae" scale="1 1 1" />
+        <mesh
+          filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"
+          scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -297,6 +302,7 @@
       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
     </inertial>
   </link>
+
   <joint name="cobotta_joint_gripper" type="prismatic">
     <parent link="cobotta_gripper_base" />
     <child link="cobotta_left_finger" />
@@ -317,15 +323,21 @@
   </transmission>
   <link name="cobotta_right_finger">
     <visual>
-      <origin rpy="0.000000 0.000000 0.000000" xyz="0.000000 0.000000 -0.060000" />
+      <origin xyz="0.002 0 -0.015"
+              rpy="1.5708 3.14159 0"/>
       <geometry>
-        <mesh filename="package://denso_cobotta_descriptions/cobotta_description/right_finger.dae" scale="1 1 1" />
+        <mesh
+          filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"
+          scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0.000000 0.000000 -0.060000" />
+      <origin xyz="0.002 0 -0.015"
+              rpy="1.5708 3.14159 0"/>
       <geometry>
-        <mesh filename="package://denso_cobotta_descriptions/cobotta_description/right_finger.dae" scale="1 1 1" />
+        <mesh
+          filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"
+          scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -334,6 +346,7 @@
       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
     </inertial>
   </link>
+
   <joint name="cobotta_joint_gripper_mimic" type="prismatic">
     <parent link="cobotta_gripper_base" />
     <child link="cobotta_right_finger" />
@@ -428,20 +441,48 @@
       <origin xyz="0 0.00 -0.038 " rpy=" 0 0 0" />
     </collision>
   </link>
-  <link name="mycobot_link6">
+
+   <link name="mycobot_link6">
     <visual>
       <geometry>
         <mesh filename="package://mycobot_280_description_ros1/meshes/link6.dae" />
       </geometry>
-      <origin xyz="0.0 0 -0.012 " rpy=" 0 0 0" />
+      <origin xyz="0.0 0 -0.012" rpy="0 0 0" />
     </visual>
     <collision>
       <geometry>
         <mesh filename="package://mycobot_280_description_ros1/meshes/link6.dae" />
       </geometry>
-      <origin xyz="0.0 0 -0.012 " rpy=" 0 0 0" />
+      <origin xyz="0.0 0 -0.012" rpy="0 0 0" />
     </collision>
   </link>
+ 
+  <!-- MyCobot吸着工具：方向確認用の仮モデル -->
+  <link name="mycobot_tool_link">
+    <visual>
+      <origin xyz="0 0 0.010" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.014" length="0.020" />
+      </geometry>
+      <material name="mycobot_tool_black">
+        <color rgba="0.15 0.15 0.15 1.0" />
+      </material>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0.010" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.014" length="0.020" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="mycobot_tool_fixed_joint" type="fixed">
+    <parent link="mycobot_link6" />
+    <child link="mycobot_tool_link" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
   <joint name="mycobot_joint1" type="revolute">
     <axis xyz="0 0 1" />
     <limit effort="1000.0" lower="-3.14" upper="3.14159" velocity="0" />
