@@ -19,9 +19,23 @@ class GraspPointToPose:
             queue_size=1
         )
 
+        # 仮の工具姿勢。修正版テスト6で紙保持姿勢を検証する
+        self.orientation_x = rospy.get_param("~orientation_x", -0.636)
+        self.orientation_y = rospy.get_param("~orientation_y", 0.0)
+        self.orientation_z = rospy.get_param("~orientation_z", 0.772)
+        self.orientation_w = rospy.get_param("~orientation_w", 0.0)
+
         rospy.loginfo("grasp_point_to_pose node started")
         rospy.loginfo("Input : /origami/grasp_point_ros")
         rospy.loginfo("Output: /origami/grasp_pose")
+        rospy.logwarn(
+            "Tool orientation is provisional: "
+            "(%.4f, %.4f, %.4f, %.4f)",
+            self.orientation_x,
+            self.orientation_y,
+            self.orientation_z,
+            self.orientation_w,
+        )
 
     def point_callback(self, point):
         pose = PoseStamped()
@@ -35,12 +49,12 @@ class GraspPointToPose:
         pose.pose.position.y = point.y
         pose.pose.position.z = point.z
 
-        # 試験姿勢：手先のZ軸を紙面方向（鉛直下向き）へ向ける
-        # Y軸回りに180度回転
-        pose.pose.orientation.x = 0.0
-        pose.pose.orientation.y = 1.0
-        pose.pose.orientation.z = 0.0
-        pose.pose.orientation.w = 0.0
+        # 仮姿勢。position_only計画では使用されない
+        # pose計画へ進む前に修正版テスト6で検証する
+        pose.pose.orientation.x = self.orientation_x
+        pose.pose.orientation.y = self.orientation_y
+        pose.pose.orientation.z = self.orientation_z
+        pose.pose.orientation.w = self.orientation_w
 
         self.publisher.publish(pose)
 

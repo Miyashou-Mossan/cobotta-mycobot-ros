@@ -18,11 +18,25 @@ class GraspPosePlanner:
 
         self.latest_pose = None
 
-        self.group_name = rospy.get_param("~group_name", "mycobot_arm")
+        self.group_name = rospy.get_param("~group_name", "cobotta_arm")
         self.end_effector_link = rospy.get_param(
             "~end_effector_link",
-            "mycobot_link6",
+            "cobotta_tool_link",
         )
+
+        # position_only：位置だけを指定
+        # pose：位置と姿勢の両方を指定
+        self.target_mode = rospy.get_param(
+            "~target_mode",
+            "position_only",
+        )
+
+        if self.target_mode not in ("position_only", "pose"):
+            raise rospy.ROSInitException(
+                "未対応のtarget_modeです: {}".format(
+                    self.target_mode
+                )
+            )
 
         # 紙面に直接接触させず、まず紙面上方の安全な接近点を計画する
         self.approach_offset_z = rospy.get_param(
@@ -64,6 +78,7 @@ class GraspPosePlanner:
         rospy.loginfo("grasp_pose_to_moveit node started")
         rospy.loginfo("Planning Group: %s", self.group_name)
         rospy.loginfo("End Effector Link: %s", self.end_effector_link)
+        rospy.loginfo("Target mode: %s", self.target_mode)
         rospy.loginfo(
             "Approach offset: %.3f m",
             self.approach_offset_z,
@@ -93,7 +108,7 @@ class GraspPosePlanner:
 
         target_pose = copy.deepcopy(self.latest_pose)
 
-        # mycobot_baseの鉛直上方向へ100 mm退避
+        # 受信Poseの基準座標系におけるZ方向へ安全距離だけ退避
         target_pose.pose.position.z += self.approach_offset_z
 
         rospy.loginfo(
@@ -106,10 +121,26 @@ class GraspPosePlanner:
 
         try:
             self.move_group.set_start_state_to_current_state()
-            self.move_group.set_pose_target(
-                target_pose,
-                self.end_effector_link,
-            )
+
+            if self.target_mode == "position_only":
+                # テスト5で確認した方式。受信Poseの姿勢は使用しない
+                self.move_group.set_pose_reference_frame(
+                    target_pose.header.frame_id
+                )
+                self.move_group.set_position_target(
+                    [
+                        target_pose.pose.position.x,
+                        target_pose.pose.position.y,
+                        target_pose.pose.position.z,
+                    ],
+                    self.end_effector_link,
+                )
+            else:
+                # 修正版テスト6以降で、検証済みの工具姿勢を使用する
+                self.move_group.set_pose_target(
+                    target_pose,
+                    self.end_effector_link,
+                )
 
             result = self.move_group.plan()
 
