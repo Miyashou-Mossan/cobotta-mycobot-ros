@@ -7,6 +7,7 @@ import moveit_commander
 import rospy
 from geometry_msgs.msg import PoseStamped
 from moveit_msgs.msg import DisplayTrajectory
+from moveit_msgs.srv import GetPositionFK, GetPositionFKRequest
 from std_srvs.srv import Trigger, TriggerResponse
 
 
@@ -17,6 +18,7 @@ class GraspPosePlanner:
         moveit_commander.roscpp_initialize(sys.argv)
 
         self.latest_pose = None
+        self.last_planned_state = None
 
         self.group_name = rospy.get_param("~group_name", "cobotta_arm")
         self.end_effector_link = rospy.get_param(
@@ -29,6 +31,12 @@ class GraspPosePlanner:
         self.target_mode = rospy.get_param(
             "~target_mode",
             "position_only",
+        )
+
+        # Trueの場合、前回の計画終点を次回計画の開始状態にする
+        self.chain_plans = rospy.get_param(
+            "~chain_plans",
+            False,
         )
 
         if self.target_mode not in ("position_only", "pose"):
@@ -55,6 +63,13 @@ class GraspPosePlanner:
         self.move_group.set_max_velocity_scaling_factor(0.10)
         self.move_group.set_max_acceleration_scaling_factor(0.10)
 
+        # 計画終点の関節角からTCP姿勢を求めるためのFKサービス
+        rospy.wait_for_service("/compute_fk", timeout=20.0)
+        self.compute_fk = rospy.ServiceProxy(
+            "/compute_fk",
+            GetPositionFK,
+        )
+
         self.display_publisher = rospy.Publisher(
             "/move_group/display_planned_path",
             DisplayTrajectory,
@@ -79,6 +94,7 @@ class GraspPosePlanner:
         rospy.loginfo("Planning Group: %s", self.group_name)
         rospy.loginfo("End Effector Link: %s", self.end_effector_link)
         rospy.loginfo("Target mode: %s", self.target_mode)
+        rospy.loginfo("Chain planned states: %s", self.chain_plans)
         rospy.loginfo(
             "Approach offset: %.3f m",
             self.approach_offset_z,
@@ -120,7 +136,19 @@ class GraspPosePlanner:
         )
 
         try:
-            self.move_group.set_start_state_to_current_state()
+            if (
+                self.chain_plans
+                and self.last_planned_state is not None
+            ):
+                self.move_group.set_start_state(
+                    self.last_planned_state
+                )
+                rospy.loginfo(
+                    "Start state: previous planned endpoint"
+                )
+            else:
+                self.move_group.set_start_state_to_current_state()
+                rospy.loginfo("Start state: current state")
 
             if self.target_mode == "position_only":
                 # テスト5で確認した方式。受信Poseの姿勢は使用しない
@@ -158,6 +186,97 @@ class GraspPosePlanner:
                 return TriggerResponse(
                     success=False,
                     message="軌道計画に失敗しました。実行はしていません。",
+                )
+
+            # 計画軌道の終点関節角を取得
+            joint_names = list(
+                trajectory.joint_trajectory.joint_names
+            )
+            final_positions = list(
+                trajectory.joint_trajectory.points[-1].positions
+            )
+
+            rospy.loginfo("=== Planned final joint positions ===")
+            for joint_name, joint_position in zip(
+                joint_names,
+                final_positions,
+            ):
+                rospy.loginfo(
+                    "%s: %.6f rad",
+                    joint_name,
+                    joint_position,
+                )
+
+            # 現在のRobotStateへ計画終点の関節角を反映
+            final_state = self.move_group.get_current_state()
+            state_names = list(final_state.joint_state.name)
+            state_positions = list(final_state.joint_state.position)
+            state_index = {
+                name: index
+                for index, name in enumerate(state_names)
+            }
+
+            for joint_name, joint_position in zip(
+                joint_names,
+                final_positions,
+            ):
+                if joint_name not in state_index:
+                    raise RuntimeError(
+                        "RobotStateに関節がありません: {}".format(
+                            joint_name
+                        )
+                    )
+
+                state_positions[state_index[joint_name]] = (
+                    joint_position
+                )
+
+            final_state.joint_state.position = state_positions
+            final_state.is_diff = False
+
+            if self.chain_plans:
+                self.last_planned_state = copy.deepcopy(
+                    final_state
+                )
+
+            # 計画終点におけるTCP姿勢を順運動学で計算
+            fk_request = GetPositionFKRequest()
+            fk_request.header.frame_id = (
+                self.move_group.get_planning_frame()
+            )
+            fk_request.fk_link_names = [
+                self.end_effector_link
+            ]
+            fk_request.robot_state = final_state
+
+            fk_response = self.compute_fk(fk_request)
+
+            if (
+                fk_response.error_code.val == 1
+                and fk_response.pose_stamped
+            ):
+                final_pose = fk_response.pose_stamped[0]
+                rospy.loginfo(
+                    "Final TCP position: "
+                    "frame=%s, x=%.6f, y=%.6f, z=%.6f",
+                    final_pose.header.frame_id,
+                    final_pose.pose.position.x,
+                    final_pose.pose.position.y,
+                    final_pose.pose.position.z,
+                )
+                rospy.loginfo(
+                    "Final TCP orientation: "
+                    "x=%.6f, y=%.6f, z=%.6f, w=%.6f",
+                    final_pose.pose.orientation.x,
+                    final_pose.pose.orientation.y,
+                    final_pose.pose.orientation.z,
+                    final_pose.pose.orientation.w,
+                )
+            else:
+                rospy.logwarn(
+                    "計画終点のFK計算に失敗しました。"
+                    " error_code=%d",
+                    fk_response.error_code.val,
                 )
 
             display_trajectory = DisplayTrajectory()
