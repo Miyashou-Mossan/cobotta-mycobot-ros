@@ -1,10 +1,35 @@
 <launch>
-  <!-- 紙中心位置 [m] -->
-  <arg name="paper_center_x" default="0.250" />
-  <arg name="paper_center_y" default="0.000" />
-  <arg name="paper_center_z" default="0.006" />
+  <!-- 紙土台上面中央のworld座標 [m] -->
+  <arg name="paper_center_x" default="0.260" />
+  <arg name="paper_center_y" default="-0.070" />
+  <arg name="paper_center_z" default="0.107" />
 
-  <!-- Unity座標系の把持点をROS座標系へ変換 -->
+  <!-- 紙土台のworld座標に対する回転 [rad] -->
+  <arg name="paper_center_yaw" default="0.785398" />
+
+  <!-- Unity変換後の基準座標 -->
+  <arg name="output_frame" default="paper_center" />
+
+  <!--
+    紙土台上面中央の固定TF
+    world → paper_center
+    yaw = 45 deg
+  -->
+  <node
+    pkg="tf"
+    type="static_transform_publisher"
+    name="paper_center_tf"
+    args="$(arg paper_center_x)
+          $(arg paper_center_y)
+          $(arg paper_center_z)
+          $(arg paper_center_yaw) 0 0
+          world paper_center 100"
+    output="screen" />
+
+  <!--
+    Unity上の紙中心基準座標を、
+    paper_center基準のPointStampedへ変換
+  -->
   <node
     pkg="origami_grasp_bridge"
     type="unity_to_ros_point.py"
@@ -12,19 +37,11 @@
     output="screen">
 
     <param
-      name="paper_center_x"
-      value="$(arg paper_center_x)" />
-
-    <param
-      name="paper_center_y"
-      value="$(arg paper_center_y)" />
-
-    <param
-      name="paper_center_z"
-      value="$(arg paper_center_z)" />
+      name="output_frame"
+      value="$(arg output_frame)" />
   </node>
 
-  <!-- geometry_msgs/PointをPoseStampedへ変換 -->
+  <!-- PointStampedをPoseStampedへ変換 -->
   <node
     pkg="origami_grasp_bridge"
     type="grasp_point_to_pose.py"

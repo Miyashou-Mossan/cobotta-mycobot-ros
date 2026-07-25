@@ -4,7 +4,21 @@ import sys
 import rospy
 import moveit_commander
 from geometry_msgs.msg import PoseStamped
+from moveit_msgs.msg import PlanningScene, ObjectColor
 
+def set_object_color(scene, object_id, red, green, blue, alpha=1.0):
+    planning_scene = PlanningScene()
+    planning_scene.is_diff = True
+
+    object_color = ObjectColor()
+    object_color.id = object_id
+    object_color.color.r = red
+    object_color.color.g = green
+    object_color.color.b = blue
+    object_color.color.a = alpha
+
+    planning_scene.object_colors.append(object_color)
+    scene.apply_planning_scene(planning_scene)
 
 def main():
     moveit_commander.roscpp_initialize(sys.argv)
@@ -59,12 +73,27 @@ def main():
     rospy.sleep(0.5)
 
     scene.add_box(
-        "paper_stand",
-        table_pose,
-        size=(0.150, 0.150, 0.005),
+    	"paper_stand",
+    	table_pose,
+    	size=(0.150, 0.150, 0.005),
     )
 
     rospy.sleep(1.0)
+
+    # Planning Scene内の物体を見分けやすくする
+    set_object_color(
+    	scene,
+    	"ground",
+    	0.45, 0.45, 0.45, 1.0
+    )
+
+    set_object_color(
+    	scene,
+    	"paper_stand",
+    	0.10, 0.30, 0.90, 1.0
+    )
+
+    rospy.sleep(0.5)
 
     known_objects = scene.get_known_object_names()
 
