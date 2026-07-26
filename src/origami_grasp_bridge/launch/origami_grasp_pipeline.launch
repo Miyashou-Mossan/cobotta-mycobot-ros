@@ -1,19 +1,21 @@
 <launch>
-  <!-- 紙土台上面中央のworld座標 [m] -->
+
+  <!-- 紙土台上面中央の位置 -->
   <arg name="paper_center_x" default="0.260" />
   <arg name="paper_center_y" default="-0.070" />
   <arg name="paper_center_z" default="0.107" />
 
-  <!-- 紙土台のworld座標に対する回転 [rad] -->
+  <!-- 紙土台の設置角度：yaw=45度 -->
   <arg name="paper_center_yaw" default="0.785398" />
 
-  <!-- Unity変換後の基準座標 -->
+  <!-- Unity変換後の基準座標系 -->
   <arg name="output_frame" default="paper_center" />
 
   <!--
-    紙土台上面中央の固定TF
-    world → paper_center
-    yaw = 45 deg
+    world → paper_center の固定TF
+
+    static_transform_publisherの引数：
+    x y z yaw pitch roll parent child period_ms
   -->
   <node
     pkg="tf"
@@ -22,14 +24,15 @@
     args="$(arg paper_center_x)
           $(arg paper_center_y)
           $(arg paper_center_z)
-          $(arg paper_center_yaw) 0 0
-          world paper_center 100"
+          $(arg paper_center_yaw)
+          0
+          0
+          world
+          paper_center
+          100"
     output="screen" />
 
-  <!--
-    Unity上の紙中心基準座標を、
-    paper_center基準のPointStampedへ変換
-  -->
+  <!-- Unity座標をROS座標へ軸変換 -->
   <node
     pkg="origami_grasp_bridge"
     type="unity_to_ros_point.py"
@@ -46,5 +49,17 @@
     pkg="origami_grasp_bridge"
     type="grasp_point_to_pose.py"
     name="grasp_point_to_pose"
-    output="screen" />
+    output="screen">
+
+    <!--
+      紙保持用の暫定工具姿勢
+      paper_center基準：RPY ≈ (0°, 75°, -45°)
+    -->
+    <param name="orientation_x" value="0.232963" />
+    <param name="orientation_y" value="0.562422" />
+    <param name="orientation_z" value="-0.303603" />
+    <param name="orientation_w" value="0.732963" />
+
+  </node>
+
 </launch>
