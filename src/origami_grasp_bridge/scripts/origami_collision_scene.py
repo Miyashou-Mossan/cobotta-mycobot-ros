@@ -53,6 +53,40 @@ def main():
         size=(2.0, 2.0, 0.02),
     )
 
+    # COBOTTA固定台
+    cobotta_mount_pose = PoseStamped()
+    cobotta_mount_pose.header.frame_id = "world"
+    cobotta_mount_pose.pose.orientation.w = 1.0
+    cobotta_mount_pose.pose.position.x = 0.010
+    cobotta_mount_pose.pose.position.y = 0.000
+    cobotta_mount_pose.pose.position.z = 0.011
+
+    scene.remove_world_object("cobotta_mount")
+    rospy.sleep(0.5)
+
+    scene.add_box(
+        "cobotta_mount",
+        cobotta_mount_pose,
+        size=(0.280, 0.260, 0.022),
+    )
+
+    # MyCobot固定台
+    mycobot_mount_pose = PoseStamped()
+    mycobot_mount_pose.header.frame_id = "world"
+    mycobot_mount_pose.pose.orientation.w = 1.0
+    mycobot_mount_pose.pose.position.x = 0.446
+    mycobot_mount_pose.pose.position.y = -0.0715
+    mycobot_mount_pose.pose.position.z = 0.040
+
+    scene.remove_world_object("mycobot_mount")
+    rospy.sleep(0.5)
+
+    scene.add_box(
+        "mycobot_mount",
+        mycobot_mount_pose,
+        size=(0.062, 0.130, 0.080),
+    )
+
     table_pose = PoseStamped()
     table_pose.header.frame_id = "world"
 

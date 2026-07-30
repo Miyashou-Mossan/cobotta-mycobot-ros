@@ -294,23 +294,23 @@
   <joint name="cobotta_tool_joint" type="fixed">
     <parent link="cobotta_gripper_base"/>
     <child link="cobotta_tool_link"/>
-    <origin xyz="-0.003 0 0.080" rpy="0 0 0"/>
+    <origin xyz="-0.002 0 0.080" rpy="0 0 0"/>
   </joint>
 
   <link name="cobotta_left_finger">
     <visual>
-      <origin xyz="-0.008 0 -0.015" rpy="-1.5708 0 0"/>
+      <origin xyz="-0.0065 0 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
         <mesh
-          filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"
+          filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4_right.STL"
           scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
-      <origin xyz="-0.008 0 -0.015" rpy="-1.5708 0 0"/>
+      <origin xyz="-0.0065 0 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
         <mesh
-          filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"
+          filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4_right.STL"
           scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
@@ -324,7 +324,7 @@
   <joint name="cobotta_joint_gripper" type="prismatic">
     <parent link="cobotta_gripper_base" />
     <child link="cobotta_left_finger" />
-    <origin rpy="0.000000 0.000000 0.000000" xyz="0.000000 0.000000 0.06000" />
+    <origin rpy="0.000000 0.000000 0.000000" xyz="0.000000 0.008750 0.06000" />
     <axis xyz="-0.000000 1.000000 -0.000000" />
     <limit effort="20" lower="0.000000" upper="0.015000" velocity="0.040000" />
     <dynamics damping="0" friction="0" />
@@ -341,8 +341,7 @@
   </transmission>
   <link name="cobotta_right_finger">
     <visual>
-      <origin xyz="0.002 0 -0.015"
-              rpy="1.5708 3.14159 0"/>
+      <origin xyz="-0.0065 0 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
         <mesh
           filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"
@@ -350,8 +349,7 @@
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0.002 0 -0.015"
-              rpy="1.5708 3.14159 0"/>
+      <origin xyz="-0.0065 0 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
         <mesh
           filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"
@@ -369,7 +367,7 @@
     <parent link="cobotta_gripper_base" />
     <child link="cobotta_right_finger" />
     <mimic joint="cobotta_joint_gripper" multiplier="-1.000000" offset="0.000000" />
-    <origin rpy="0.000000 0.000000 0.000000" xyz="0.000000 0.000000 0.060000" />
+    <origin rpy="0.000000 0.000000 0.000000" xyz="0.000000 -0.002250 0.060000" />
     <axis xyz="-0.000000 1.000000 -0.000000" />
     <limit effort="20" lower="-0.015000" upper="0.000000" velocity="0.040000" />
     <dynamics damping="0" friction="0" />
@@ -478,12 +476,35 @@
   <!-- MyCobot吸着工具：方向確認用の仮モデル -->
   <link name="mycobot_tool_link">
     <visual>
-      <origin xyz="0 0 0.010" rpy="0 0 0" />
+      <origin xyz="-0.018 -0.018 0.043" rpy="-1.5708 0 0" />
       <geometry>
-        <cylinder radius="0.014" length="0.020" />
+        <mesh
+          filename="package://dual_robot_description/meshes/mycobot/tool/mycobot_tips.STL"
+          scale="0.001 0.001 0.001" />
       </geometry>
       <material name="mycobot_tool_black">
         <color rgba="0.15 0.15 0.15 1.0" />
+      </material>
+    </visual>
+
+    <!-- MyCobot吸着部：細軸18 mm＋太い吸着面2 mm -->
+    <visual>
+      <origin xyz="0.000 -0.023 0.022" rpy="1.5708 0 0" />
+      <geometry>
+        <cylinder radius="0.006" length="0.018" />
+      </geometry>
+      <material name="mycobot_suction_stem_visual">
+        <color rgba="0.70 0.70 0.70 1.0" />
+      </material>
+    </visual>
+
+    <visual>
+      <origin xyz="0.000 -0.033 0.022" rpy="1.5708 0 0" />
+      <geometry>
+        <cylinder radius="0.0085" length="0.002" />
+      </geometry>
+      <material name="mycobot_suction_pad_visual">
+        <color rgba="0.85 0.85 0.85 1.0" />
       </material>
     </visual>
 

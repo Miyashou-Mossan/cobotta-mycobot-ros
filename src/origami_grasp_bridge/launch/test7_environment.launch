@@ -1,0 +1,21 @@
+<launch>
+  <!--
+    Test 7 integrated visualization environment
+
+    Starts:
+      - dual robot MoveIt demo environment
+      - robot_state_publisher / joint_state_publisher
+      - move_group
+      - RViz
+      - table, robot mounts, and paper stand
+  -->
+
+  <include file="$(find cobotta_mycobot_dual_robot_moveit_config)/launch/demo.launch"/>
+
+  <node
+    pkg="origami_grasp_bridge"
+    type="origami_collision_scene.py"
+    name="origami_collision_scene"
+    output="screen"
+    required="false"/>
+</launch>
