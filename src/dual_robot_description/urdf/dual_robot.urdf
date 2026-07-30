@@ -569,4 +569,64 @@
     <child link="mycobot_base" />
     <origin xyz="0.446 -0.070  0.080" rpy="0 0 3.14159" />
   </joint>
+  <!-- Temporary visual model for the paper-adjustment tool holder -->
+  <link name="set_tool_base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/environment/set_tool_base.STL"
+          scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="set_tool_base_gray">
+        <color rgba="0.55 0.55 0.55 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="world_to_set_tool_base" type="fixed">
+    <parent link="world"/>
+    <child link="set_tool_base_link"/>
+    <origin xyz="0.025 -0.175 0.0495" rpy="1.5708 0 0"/>
+  </joint>
+  <!-- Temporary visual model for the hand-cap holder -->
+  <link name="cap_case_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/environment/cap_case.STL"
+          scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="cap_case_gray">
+        <color rgba="0.45 0.45 0.45 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="world_to_cap_case" type="fixed">
+    <parent link="world"/>
+    <child link="cap_case_link"/>
+    <origin xyz="-0.0265 -0.130 0.120" rpy="1.5708 3.14159 0"/>
+  </joint>
+  <!-- Temporary visual model for the hand-held petal-folding tool -->
+  <link name="hand_cap_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/environment/hand_cap.STL"
+          scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="hand_cap_gray">
+        <color rgba="0.65 0.65 0.65 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="world_to_hand_cap" type="fixed">
+    <parent link="world"/>
+    <child link="hand_cap_link"/>
+    <origin xyz="-0.085 -0.160 0.030" rpy="0 0 0"/>
+  </joint>
 </robot>
