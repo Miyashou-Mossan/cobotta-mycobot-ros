@@ -509,9 +509,25 @@
     </visual>
 
     <collision>
-      <origin xyz="0 0 0.010" rpy="0 0 0" />
+      <origin xyz="-0.018 -0.018 0.043" rpy="-1.5708 0 0" />
       <geometry>
-        <cylinder radius="0.014" length="0.020" />
+        <mesh
+          filename="package://dual_robot_description/meshes/mycobot/tool/mycobot_tips.STL"
+          scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+
+    <collision>
+      <origin xyz="0.000 -0.023 0.022" rpy="1.5708 0 0" />
+      <geometry>
+        <cylinder radius="0.006" length="0.018" />
+      </geometry>
+    </collision>
+
+    <collision>
+      <origin xyz="0.000 -0.033 0.022" rpy="1.5708 0 0" />
+      <geometry>
+        <cylinder radius="0.0085" length="0.002" />
       </geometry>
     </collision>
   </link>
@@ -582,6 +598,14 @@
         <color rgba="0.55 0.55 0.55 1.0"/>
       </material>
     </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/environment/set_tool_base.STL"
+          scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
   </link>
 
   <joint name="world_to_set_tool_base" type="fixed">
@@ -602,6 +626,15 @@
         <color rgba="0.45 0.45 0.45 1.0"/>
       </material>
     </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/environment/cap_case.STL"
+          scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
   </link>
 
   <joint name="world_to_cap_case" type="fixed">
@@ -622,6 +655,15 @@
         <color rgba="0.65 0.65 0.65 1.0"/>
       </material>
     </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/environment/hand_cap.STL"
+          scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
   </link>
 
   <joint name="world_to_hand_cap" type="fixed">
