@@ -18,4 +18,11 @@
     name="origami_collision_scene"
     output="screen"
     required="false"/>
+
+  <!-- paper_center: world基準の折り紙中心 -->
+  <node
+      pkg="tf"
+      type="static_transform_publisher"
+      name="paper_center_tf"
+      args="0.260 -0.070 0.107 0 0 0.785398 world paper_center 100"/>
 </launch>
