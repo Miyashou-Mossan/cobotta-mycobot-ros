@@ -1,0 +1,69 @@
+plan_0:
+  start_state_:
+    joint_state:
+      header:
+        seq: 0
+        stamp:
+          secs: 0
+          nsecs: 0
+        frame_id: ''
+      name:
+        - joint_1
+        - joint_2
+        - joint_3
+        - joint_4
+        - joint_5
+        - joint_6
+      position:
+        - -0.066513903799
+        - 0.055623357921
+        - 1.390978472370
+        - 0.130345564741
+        - 0.092292827535
+        - -0.156941136776
+      velocity: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      effort: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+  trajectory_:
+    joint_trajectory:
+      header:
+        seq: 0
+        stamp:
+          secs: 0
+          nsecs: 0
+        frame_id: ''
+      joint_names:
+        - joint_1
+        - joint_2
+        - joint_3
+        - joint_4
+        - joint_5
+        - joint_6
+      points:
+        - positions:
+            - -0.066513903799
+            - 0.055623357921
+            - 1.390978472370
+            - 0.130345564741
+            - 0.092292827535
+            - -0.156941136776
+          velocities: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+          accelerations: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+          effort: []
+          time_from_start:
+            secs: 0
+            nsecs: 0
+
+        - positions:
+            - -0.065513903799
+            - 0.055623357921
+            - 1.390978472370
+            - 0.130345564741
+            - 0.092292827535
+            - -0.156941136776
+          velocities: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+          accelerations: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+          effort: []
+          time_from_start:
+            secs: 5
+            nsecs: 0
