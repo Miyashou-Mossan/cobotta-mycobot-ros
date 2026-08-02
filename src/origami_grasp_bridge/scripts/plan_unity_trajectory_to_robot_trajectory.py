@@ -44,6 +44,25 @@ class UnityTrajectoryRobotPlanner:
 
         self.fixed_z = rospy.get_param("~fixed_z", 0.065)
 
+        # unity_fixed_z:
+        #   従来どおりUnity座標を変換し、Zはfixed_zを使用
+        # ros_xyz:
+        #   入力YAMLのtranslationをpaper_center基準ROS座標として直接使用
+        self.input_mode = rospy.get_param(
+            "~input_mode",
+            "unity_fixed_z",
+        )
+
+        if self.input_mode not in (
+            "unity_fixed_z",
+            "ros_xyz",
+        ):
+            raise rospy.ROSInitException(
+                "未対応のinput_modeです: {}".format(
+                    self.input_mode
+                )
+            )
+
         self.orientation = [
             rospy.get_param("~orientation_x", 0.232963),
             rospy.get_param("~orientation_y", 0.562422),
@@ -59,6 +78,12 @@ class UnityTrajectoryRobotPlanner:
         self.end_effector_link = rospy.get_param(
             "~end_effector_link",
             "cobotta_tool_link",
+        )
+
+        # 実機の現在関節角をMoveIt計画開始状態として指定できるようにする
+        self.start_joint_positions = rospy.get_param(
+            "~start_joint_positions",
+            [],
         )
 
         self.planning_time = rospy.get_param(
@@ -245,10 +270,16 @@ class UnityTrajectoryRobotPlanner:
                 )
             )
 
-        # Unity → paper_center
-        ros_x = unity_z
-        ros_y = -unity_x
-        ros_z = self.fixed_z
+        if self.input_mode == "ros_xyz":
+            # 入力値は既にpaper_center基準のROS座標
+            ros_x = unity_x
+            ros_y = unity_y
+            ros_z = unity_z
+        else:
+            # 従来のUnity → paper_center変換
+            ros_x = unity_z
+            ros_y = -unity_x
+            ros_z = self.fixed_z
 
         pose = PoseStamped()
 
@@ -329,6 +360,58 @@ class UnityTrajectoryRobotPlanner:
 
     def plan_segments(self, unity_points):
         initial_state = self.move_group.get_current_state()
+
+        if self.start_joint_positions:
+            active_joints = list(
+                self.move_group.get_active_joints()
+            )
+
+            if len(self.start_joint_positions) != len(active_joints):
+                raise ValueError(
+                    "start_joint_positionsは{}要素必要ですが、"
+                    "{}要素です。".format(
+                        len(active_joints),
+                        len(self.start_joint_positions),
+                    )
+                )
+
+            state_names = list(initial_state.joint_state.name)
+            state_positions = list(
+                initial_state.joint_state.position
+            )
+            state_index = {
+                name: index
+                for index, name in enumerate(state_names)
+            }
+
+            for joint_name, joint_position in zip(
+                active_joints,
+                self.start_joint_positions,
+            ):
+                if joint_name not in state_index:
+                    raise RuntimeError(
+                        "RobotStateに関節がありません: {}".format(
+                            joint_name
+                        )
+                    )
+
+                state_positions[state_index[joint_name]] = float(
+                    joint_position
+                )
+
+            initial_state.joint_state.position = state_positions
+            initial_state.joint_state.header.stamp = rospy.Time(0)
+            initial_state.is_diff = False
+
+            rospy.loginfo(
+                "計画開始状態に実機関節角を使用: %s",
+                self.start_joint_positions,
+            )
+        else:
+            rospy.loginfo(
+                "計画開始状態にMoveIt現在状態を使用"
+            )
+
         start_state = copy.deepcopy(initial_state)
 
         segments = []
