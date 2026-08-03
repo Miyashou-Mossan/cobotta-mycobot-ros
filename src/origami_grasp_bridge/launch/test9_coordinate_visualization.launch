@@ -1,0 +1,50 @@
+<launch>
+  <!--
+    Test9 follow-up:
+    Visualize the paper coordinate correspondence without executing
+    any robot trajectory.
+  -->
+
+  <arg name="paper_size" default="0.150"/>
+  <arg name="fold_line_axis" default="y"/>
+  <arg name="fold_direction_sign" default="1.0"/>
+
+  <include
+      file="$(find origami_grasp_bridge)/launch/test7_environment.launch"/>
+
+  <node
+      pkg="origami_grasp_bridge"
+      type="origami_coordinate_visualizer.py"
+      name="origami_coordinate_visualizer"
+      output="screen"
+      required="true">
+
+    <param name="frame_id" value="paper_center"/>
+    <param name="paper_size" value="$(arg paper_size)"/>
+    <param name="axis_length" value="0.100"/>
+    <param name="normal_length" value="0.060"/>
+
+    <!--
+      These fold settings are provisional display references.
+      They do not modify the Test9 robot trajectory.
+    -->
+    <param name="fold_line_axis" value="$(arg fold_line_axis)"/>
+    <param
+        name="fold_direction_sign"
+        value="$(arg fold_direction_sign)"/>
+    <param name="fold_line_offset" value="0.0"/>
+  </node>
+
+  <node
+      pkg="origami_grasp_bridge"
+      type="origami_unity_coordinate_visualizer.py"
+      name="origami_unity_coordinate_visualizer"
+      output="screen"
+      required="true">
+    <param name="output_frame" value="paper_center"/>
+
+    <!-- 表示専用：Unityマーカーを紙面より10 mm上へ移動 -->
+    <param name="visual_z_offset" value="0.010"/>
+  </node>
+
+</launch>
