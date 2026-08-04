@@ -47,4 +47,23 @@
     <param name="visual_z_offset" value="0.010"/>
   </node>
 
+
+  <!--
+    Unityの実折り筋・動く側・動く紙面法線から、
+    工具姿勢候補と紙面追従目標姿勢を生成して表示する。
+    目標姿勢は候補Cへ工具ローカルY軸回り-11度の
+    固定補正を加える。実機軌道の生成・実行は行わない。
+  -->
+  <node
+      pkg="origami_grasp_bridge"
+      type="cobotta_tool_orientation_visualizer.py"
+      name="cobotta_tool_orientation_visualizer"
+      output="screen"
+      required="true">
+    <param name="output_frame" value="paper_center"/>
+    <param name="visual_z_offset" value="0.010"/>
+    <param name="axis_length" value="0.060"/>
+    <param name="tool_pitch_offset_deg" value="-11.0"/>
+  </node>
+
 </launch>

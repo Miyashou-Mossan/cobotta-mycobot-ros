@@ -167,6 +167,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   scripts/origami_coordinate_visualizer.py
   scripts/origami_unity_coordinate_visualizer.py
+  scripts/cobotta_tool_orientation_visualizer.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
