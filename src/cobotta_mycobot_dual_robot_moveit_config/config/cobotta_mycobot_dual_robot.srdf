@@ -59,4 +59,5 @@
     <disable_collisions link1="mycobot_link4" link2="mycobot_link6" reason="Never"/>
     <disable_collisions link1="mycobot_link5" link2="mycobot_link6" reason="Adjacent"/>
     <disable_collisions link1="mycobot_link6" link2="mycobot_tool_link" reason="Adjacent"/>
+    <disable_collisions link1="set_tool_base_link" link2="set_cap_link" reason="Default"/>
 </robot>

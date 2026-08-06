@@ -613,6 +613,36 @@
     <child link="set_tool_base_link"/>
     <origin xyz="0.025 -0.175 0.0495" rpy="1.5708 0 0"/>
   </joint>
+  <!-- Temporary visual model for the COBOTTA exchange tool placed on set_tool_base -->
+  <link name="set_cap_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/cobotta/set_cap.stl"
+          scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="set_cap_blue">
+        <color rgba="0.20 0.45 0.85 1.0"/>
+      </material>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/cobotta/set_cap.stl"
+          scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="set_tool_base_to_set_cap" type="fixed">
+    <parent link="set_tool_base_link"/>
+    <child link="set_cap_link"/>
+    <origin xyz="0.000 -0.09196 -0.00018" rpy="-1.5708 0 0"/>
+  </joint>
+
   <!-- Temporary visual model for the hand-cap holder -->
   <link name="cap_case_link">
     <visual>
