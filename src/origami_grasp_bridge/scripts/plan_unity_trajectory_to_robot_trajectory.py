@@ -70,6 +70,25 @@ class UnityTrajectoryRobotPlanner:
             rospy.get_param("~orientation_w", 0.732963),
         ]
 
+        # fixed:
+        #   従来どおり全点で固定Quaternionを使用
+        # from_input:
+        #   入力MultiDOFJointTrajectoryのrotationを各点で使用
+        self.orientation_mode = rospy.get_param(
+            "~orientation_mode",
+            "fixed",
+        )
+
+        if self.orientation_mode not in (
+            "fixed",
+            "from_input",
+        ):
+            raise rospy.ROSInitException(
+                "未対応のorientation_modeです: {}".format(
+                    self.orientation_mode
+                )
+            )
+
         self.group_name = rospy.get_param(
             "~group_name",
             "cobotta_arm",
@@ -162,6 +181,10 @@ class UnityTrajectoryRobotPlanner:
         rospy.loginfo(
             "固定高さ: %.6f m",
             self.fixed_z,
+        )
+        rospy.loginfo(
+            "姿勢入力モード: %s",
+            self.orientation_mode,
         )
         rospy.loginfo(
             "速度スケーリング: %.3f",
@@ -291,10 +314,65 @@ class UnityTrajectoryRobotPlanner:
         pose.pose.position.y = ros_y
         pose.pose.position.z = ros_z
 
-        pose.pose.orientation.x = self.orientation[0]
-        pose.pose.orientation.y = self.orientation[1]
-        pose.pose.orientation.z = self.orientation[2]
-        pose.pose.orientation.w = self.orientation[3]
+        if self.orientation_mode == "from_input":
+            try:
+                rotation = (
+                    unity_point["transforms"][0]["rotation"]
+                )
+
+                orientation = [
+                    float(rotation["x"]),
+                    float(rotation["y"]),
+                    float(rotation["z"]),
+                    float(rotation["w"]),
+                ]
+
+            except (
+                KeyError,
+                IndexError,
+                TypeError,
+                ValueError,
+            ) as error:
+                raise ValueError(
+                    "index {} の入力Quaternionを取得できません: "
+                    "{}".format(
+                        point_index,
+                        error,
+                    )
+                )
+
+            norm = math.sqrt(
+                sum(value * value for value in orientation)
+            )
+
+            if norm <= 1.0e-12:
+                raise ValueError(
+                    "index {} の入力Quaternionノルムが0です。"
+                    .format(point_index)
+                )
+
+            orientation = [
+                value / norm
+                for value in orientation
+            ]
+
+        else:
+            orientation = self.orientation
+
+        pose.pose.orientation.x = orientation[0]
+        pose.pose.orientation.y = orientation[1]
+        pose.pose.orientation.z = orientation[2]
+        pose.pose.orientation.w = orientation[3]
+
+        rospy.loginfo(
+            "[index %d] orientation: "
+            "x=%.9f, y=%.9f, z=%.9f, w=%.9f",
+            point_index,
+            orientation[0],
+            orientation[1],
+            orientation[2],
+            orientation[3],
+        )
 
         return pose
 
