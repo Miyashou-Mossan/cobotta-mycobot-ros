@@ -64,6 +64,10 @@ ANGLE_VALUES_DEG = [
 
 JUMP_LIMIT_DEG = 30.0
 
+# CENTER IK solutions whose maximum joint-angle difference
+# is below this value are treated as the same IK branch.
+CENTER_DUPLICATE_THRESHOLD_DEG = 0.01
+
 
 def load_base_module():
 
@@ -408,6 +412,7 @@ def search_branch(
     )
 
     tested = 0
+    center_unique_count = 0
     center_valid_count = 0
     full_pass_count = 0
 
@@ -425,6 +430,14 @@ def search_branch(
                         rz
                     )
                 )
+
+                # ====================================
+                # STEP 1:
+                # Solve CENTER IK for all seeds.
+                # Keep only unique CENTER IK branches.
+                # ====================================
+
+                unique_center_candidates = []
 
                 for j1_offset in (
                     m.J1_OFFSETS_DEG
@@ -444,10 +457,6 @@ def search_branch(
                                 j2_offset
                             )
                         )
-
-                        # ------------------------------------
-                        # CENTER IK
-                        # ------------------------------------
 
                         ik_res = m.solve_ik(
                             compute_ik,
@@ -473,101 +482,170 @@ def search_branch(
                             )
                         )
 
-                        # ------------------------------------
-                        # CENTER collision
-                        # ------------------------------------
-
-                        validity = (
-                            m.check_state(
-                                check_validity,
-                                center_state
-                            )
-                        )
-
-                        if not validity.valid:
-
-                            stats[
-                                "CENTER_COLLISION"
-                            ] += 1
-
-                            collision_stats[
-                                collision_text(
-                                    validity
-                                )
-                            ] += 1
-
-                            continue
-
-                        center_valid_count += 1
-
-                        # ------------------------------------
-                        # Only valid CENTER states get a
-                        # full branch evaluation.
-                        # ------------------------------------
-
-                        result = (
-                            evaluate_full_branch(
-                                m,
+                        center_joints = (
+                            m.get_joint_dict(
                                 center_state,
-                                orientation,
-                                indices,
-                                compute_ik,
-                                check_validity,
                                 joint_names
                             )
                         )
 
-                        if not result["pass"]:
+                        duplicate = False
 
-                            stats[
-                                result["category"]
-                            ] += 1
+                        for candidate in (
+                            unique_center_candidates
+                        ):
+
+                            distance_deg = (
+                                m.joint_distance_deg(
+                                    center_joints,
+                                    candidate[
+                                        "center_joints"
+                                    ],
+                                    joint_names
+                                )
+                            )
 
                             if (
-                                result["category"]
-                                == "PATH_COLLISION"
+                                distance_deg
+                                <
+                                CENTER_DUPLICATE_THRESHOLD_DEG
                             ):
 
-                                collision_stats[
-                                    result["detail"]
-                                ] += 1
+                                duplicate = True
+                                break
+
+                        if duplicate:
+
+                            stats[
+                                "CENTER_DUPLICATE"
+                            ] += 1
 
                             continue
 
-                        full_pass_count += 1
-                        stats["PASS"] += 1
+                        unique_center_candidates.append(
+                            {
+                                "center_state":
+                                    copy.deepcopy(
+                                        center_state
+                                    ),
 
-                        result["rx_deg"] = rx
-                        result["ry_deg"] = ry
-                        result["rz_deg"] = rz
+                                "center_joints":
+                                    copy.deepcopy(
+                                        center_joints
+                                    ),
 
-                        result[
-                            "j1_offset_deg"
-                        ] = j1_offset
+                                "j1_offset_deg":
+                                    j1_offset,
 
-                        result[
-                            "j2_offset_deg"
-                        ] = j2_offset
+                                "j2_offset_deg":
+                                    j2_offset,
+                            }
+                        )
 
-                        result[
-                            "center_state"
-                        ] = center_state
+                # ====================================
+                # STEP 2:
+                # Collision and PATH evaluation are
+                # done only for unique CENTER IK.
+                # ====================================
 
-                        if best is None:
+                center_unique_count += len(
+                    unique_center_candidates
+                )
 
-                            best = result
+                for candidate in (
+                    unique_center_candidates
+                ):
 
-                        elif (
-                            candidate_score(
-                                result
+                    center_state = copy.deepcopy(
+                        candidate["center_state"]
+                    )
+
+                    validity = m.check_state(
+                        check_validity,
+                        center_state
+                    )
+
+                    if not validity.valid:
+
+                        stats[
+                            "CENTER_COLLISION"
+                        ] += 1
+
+                        collision_stats[
+                            collision_text(
+                                validity
                             )
-                            >
-                            candidate_score(
-                                best
-                            )
+                        ] += 1
+
+                        continue
+
+                    center_valid_count += 1
+
+                    result = evaluate_full_branch(
+                        m,
+                        center_state,
+                        orientation,
+                        indices,
+                        compute_ik,
+                        check_validity,
+                        joint_names
+                    )
+
+                    if not result["pass"]:
+
+                        stats[
+                            result["category"]
+                        ] += 1
+
+                        if (
+                            result["category"]
+                            == "PATH_COLLISION"
                         ):
 
-                            best = result
+                            collision_stats[
+                                result["detail"]
+                            ] += 1
+
+                        continue
+
+                    full_pass_count += 1
+                    stats["PASS"] += 1
+
+                    result["rx_deg"] = rx
+                    result["ry_deg"] = ry
+                    result["rz_deg"] = rz
+
+                    result[
+                        "j1_offset_deg"
+                    ] = candidate[
+                        "j1_offset_deg"
+                    ]
+
+                    result[
+                        "j2_offset_deg"
+                    ] = candidate[
+                        "j2_offset_deg"
+                    ]
+
+                    result[
+                        "center_state"
+                    ] = center_state
+
+                    if best is None:
+
+                        best = result
+
+                    elif (
+                        candidate_score(
+                            result
+                        )
+                        >
+                        candidate_score(
+                            best
+                        )
+                    ):
+
+                        best = result
 
                 # progress after each orientation
                 print(
@@ -599,6 +677,16 @@ def search_branch(
     )
 
     print(
+        "CENTER unique      : %d"
+        % center_unique_count
+    )
+
+    print(
+        "CENTER duplicate   : %d"
+        % stats["CENTER_DUPLICATE"]
+    )
+
+    print(
         "CENTER valid       : %d"
         % center_valid_count
     )
@@ -615,6 +703,7 @@ def search_branch(
 
     for key in [
         "CENTER_IK_FAIL",
+        "CENTER_DUPLICATE",
         "CENTER_COLLISION",
         "PATH_IK_FAIL",
         "PATH_COLLISION",
