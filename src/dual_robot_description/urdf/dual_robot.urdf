@@ -538,6 +538,15 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
   </joint>
 
+  <!-- MyCobot crease TCP: representative contact point for fold-line tracing -->
+  <link name="mycobot_crease_tcp"/>
+
+  <joint name="mycobot_crease_tcp_joint" type="fixed">
+    <parent link="mycobot_tool_link"/>
+    <child link="mycobot_crease_tcp"/>
+    <origin xyz="0.0053 -0.001 0.0373" rpy="0 0 0"/>
+  </joint>
+
   <joint name="mycobot_joint1" type="revolute">
     <axis xyz="0 0 1" />
     <limit effort="1000.0" lower="-3.14" upper="3.14159" velocity="0" />

@@ -94,22 +94,23 @@ def main():
     # 天板上面を z = 0.75 m に設定
     # 厚さ0.03 mなので中心は z = 0.735 m
     table_pose.pose.position.x = 0.260
-    table_pose.pose.position.y = -0.070
-    table_pose.pose.position.z = 0.1045
+    table_pose.pose.position.y = 0.036066
+    table_pose.pose.position.z = 0.107
 
-    table_pose.pose.orientation.x = 0.0
-    table_pose.pose.orientation.y = 0.0
-    table_pose.pose.orientation.z = 0.382683
-    table_pose.pose.orientation.w = 0.923880
+    table_pose.pose.orientation.x = -0.270598
+    table_pose.pose.orientation.y = 0.653281
+    table_pose.pose.orientation.z = -0.653281
+    table_pose.pose.orientation.w = 0.270598
 
     scene.remove_world_object("table")
     scene.remove_world_object("paper_stand")
     rospy.sleep(0.5)
 
-    scene.add_box(
-    	"paper_stand",
-    	table_pose,
-    	size=(0.150, 0.150, 0.005),
+    scene.add_mesh(
+        "paper_stand",
+        table_pose,
+        "/home/maeda/catkin_ws/src/dual_robot_description/meshes/environment/paper_stand/base_up.STL",
+        size=(0.001, 0.001, 0.001),
     )
 
     rospy.sleep(1.0)
@@ -138,7 +139,7 @@ def main():
 
     if "paper_stand" in known_objects:
         rospy.loginfo("paper_stand added to Planning Scene.")
-        rospy.loginfo("Size: 0.150 x 0.150 x 0.005 m")
+        rospy.loginfo("paper_stand mesh: base_up.STL")
         rospy.loginfo("Top surface: z = 0.107 m")
     else:
         rospy.logerr("Failed to add table.")
