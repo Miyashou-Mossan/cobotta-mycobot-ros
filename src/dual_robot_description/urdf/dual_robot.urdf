@@ -508,11 +508,13 @@
       </material>
     </visual>
 
+    <!-- MyCobot tool forbidden collision:
+         tool body + rear 50% of sloped contact surface -->
     <collision>
       <origin xyz="-0.018 -0.018 0.043" rpy="-1.5708 0 0" />
       <geometry>
         <mesh
-          filename="package://dual_robot_description/meshes/mycobot/tool/mycobot_tips.STL"
+          filename="package://dual_robot_description/meshes/mycobot/tool/mycobot_tips_forbidden.STL"
           scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
@@ -535,6 +537,38 @@
   <joint name="mycobot_tool_fixed_joint" type="fixed">
     <parent link="mycobot_link6" />
     <child link="mycobot_tool_link" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
+
+  <!-- Allowed contact region:
+       tip-side 50% of the sloped tool surface -->
+  <link name="mycobot_allowed_contact_link">
+    <visual>
+      <origin xyz="-0.018 -0.018 0.043" rpy="-1.5708 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/mycobot/tool/mycobot_tips_allowed_contact.STL"
+          scale="0.001 0.001 0.001" />
+      </geometry>
+      <material name="mycobot_allowed_contact_green">
+        <color rgba="0.10 1.00 0.20 0.80" />
+      </material>
+    </visual>
+
+    <collision>
+      <origin xyz="-0.018 -0.018 0.043" rpy="-1.5708 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dual_robot_description/meshes/mycobot/tool/mycobot_tips_allowed_contact.STL"
+          scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="mycobot_allowed_contact_joint" type="fixed">
+    <parent link="mycobot_tool_link" />
+    <child link="mycobot_allowed_contact_link" />
     <origin xyz="0 0 0" rpy="0 0 0" />
   </joint>
 
