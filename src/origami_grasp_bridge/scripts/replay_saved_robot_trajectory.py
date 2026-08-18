@@ -13,7 +13,7 @@ from moveit_msgs.msg import (
 )
 
 
-INPUT_FILE = "/home/maeda/mycobot_foldline_trajectory.yaml"
+DEFAULT_INPUT_FILE = "/home/maeda/mycobot_foldline_trajectory.yaml"
 
 DISPLAY_TOPIC = "/move_group/display_planned_path"
 
@@ -33,18 +33,23 @@ def main():
         "replay_saved_robot_trajectory"
     )
 
+    input_file = rospy.get_param(
+        "~input_file",
+        DEFAULT_INPUT_FILE
+    )
+
     print("")
     print(
         "===== Saved RobotTrajectory replay ====="
     )
-    print("file :", INPUT_FILE)
+    print("file :", input_file)
 
     # ========================================
     # Load YAML
     # ========================================
 
     try:
-        with open(INPUT_FILE, "r") as f:
+        with open(input_file, "r") as f:
             data = yaml.safe_load(f)
 
     except Exception as e:
