@@ -324,16 +324,67 @@ Visualization Manager:
       Axes Radius: 0.004999999888241291
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
-      Name: Pose
+      Name: Unity Grasp Pose
       Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Axes
       Topic: /origami/grasp_pose
       Unreliable: false
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /origami/debug/cobotta_collision_contacts
+      Name: COBOTTA Collision Contacts
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: false
+      Name: COBOTTA Actual Grasp Point
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /origami/debug/cobotta_actual_grasp_point/update
+      Value: false
+    - Attached Body Color: 150; 50; 150
+      Class: moveit_rviz_plugin/RobotState
+      Collision Enabled: false
+      Enabled: false
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+      Name: COBOTTA Branch Search State
+      Robot Alpha: 1
+      Robot Description: robot_description
+      Robot State Topic: /origami/debug/cobotta_branch_search_state
+      Show All Links: true
+      Show Highlights: true
+      Value: false
+      Visual Enabled: true
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /origami/debug/cobotta_split_motion_reference
+      Name: COBOTTA Split-Motion Reference
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /origami/debug/cobotta_finish_reference_points
+      Name: COBOTTA FINISH340 Reference
+      Namespaces:
+        {}
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
