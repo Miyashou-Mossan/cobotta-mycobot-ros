@@ -1,0 +1,299 @@
+baseline:
+  name: COBOTTA_FINISH340_Golden_Baseline
+  version: 1
+  fixed_date: '2026-08-22'
+  status: GOLDEN_BASELINE_FIXED
+  phase: Phase 1-B
+  completion:
+    golden_inputs_sha256_fixed: true
+    golden_files_sha256_fixed: true
+    scripts_sha256_fixed: true
+    validation_values_fixed: true
+    executor_verified: true
+    safety_gates_verified: true
+    operation_responsibility_fixed: true
+    git_workspace_checked: true
+purpose:
+  description: 'FINISH340の476点Split-Motion実機成功系を、 後続の整理・簡易化・一般化作業に対する比較基準として固定する。
+
+    '
+  rules:
+  - FINISH index340を変更しない
+  - index341以降を再探索しない
+  - 476点Split-Motionを別方式で作り直さない
+  - 既存成功成果物を移動・削除・上書きしない
+  - 最終RViz確認と実機Execute許可は人が行う
+finish340:
+  search_start_index: 260
+  finish_paper_index: 340
+  finish_local_x_deg: -15.0
+  finish_local_y_deg: 30.0
+  beam_width: 20
+  orientation_step_deg: 5.0
+  max_joint_jump_deg: 10.0
+  actual_grasp_correction:
+    enabled: true
+    r_grasp_m:
+    - 0.000401
+    - -0.001507
+    - -0.004894
+trajectory:
+  branch_preserving_points: 341
+  edge_fixed_points: 348
+  split_motion_points: 476
+  total_time_s: 55.090412405
+  velocity_scaling: 0.1
+  acceleration_scaling: 0.1
+  max_adjacent_joint_change_deg: 0.878964
+  max_adjacent_joint_change_joint: J6
+collision_validation:
+  checked_robot_states: 787
+  invalid_states: 0
+git_snapshot:
+  branch: mycobot-contact-boundary
+  head: 45e11fa5e7297c6bb05babc90a6a7786ebb5ecc3
+  origin: 45e11fa5e7297c6bb05babc90a6a7786ebb5ecc3
+  tracked_modified_count: 1
+  untracked_cobotta_count: 6
+  untracked_mycobot_count: 25
+  untracked_total_count: 31
+  tracked_modified:
+  - src/cobotta_mycobot_dual_robot_moveit_config/launch/moveit.rviz
+  note: Phase 1-A終了時とPhase 1-B開始時で同一状態
+golden_files:
+- role: actual_grasp_collision_scan
+  path: /home/maeda/directionA_reverse_local_z_m25_actual_grasp_collision_scan.csv
+  sha256: ef183fa1ff74d7212270d4d9281f757ab79e9ccf1eb679ecdf47bb1a293c220c
+- role: branch_preserving_best_path
+  path: /home/maeda/cobotta_branch_preserving_best_path.csv
+  sha256: f9ac1509fd89b943a1309e3a0a0e576b5ee377ae8e71f8ccdfb8e964e1281ecf
+- role: branch_preserving_full_path
+  path: /home/maeda/cobotta_branch_preserving_full_path_0_340.csv
+  sha256: 0539b66a623189ce3955b7ae06f333d13f87a5718334d56daa5458a82ca5e478
+- role: edge_fixed_full_path
+  path: /home/maeda/cobotta_branch_preserving_full_path_0_340_edge_fixed.csv
+  sha256: 8436ce74489ca75bd4bd4ef981f36822e01de4dca77935e7b622d9a866fa2717
+- role: split_motion_diagnostic_summary
+  path: /home/maeda/cobotta_split_motion_diagnostic_summary.csv
+  sha256: d140fb8b3747ae0d16c7a31a247dcfe10276ed07966d936f6036405e279be45e
+- role: split_motion_diagnostic_detail
+  path: /home/maeda/cobotta_split_motion_diagnostic_detail.csv
+  sha256: 5bc65137d9125167dd0736112b99f53613790233923f5437e8bcb08aebf9e215
+- role: split_motion_joint_path
+  path: /home/maeda/cobotta_branch_preserving_full_path_0_340_split_motion.csv
+  sha256: 876794cd1a029a365565e2dd11ae1e56a89d0dd97104fc5f568bfee8db43d2c3
+- role: split_motion_collision_validation
+  path: /home/maeda/cobotta_branch_preserving_full_path_0_340_split_motion_collision_validation.csv
+  sha256: 0c164c633e9ea61aeab0771423d7f49c851bb0d748062d3cdce227eda8520e57
+- role: robot_trajectory
+  path: /home/maeda/cobotta_branch_preserving_finish340_split_motion_robot_trajectory.yaml
+  sha256: 310f58038f6762f6344030be2a2705beb3fbf5004bf2deeef9bc78ebfc56e799
+- role: legacy_plan
+  path: /home/maeda/cobotta_branch_preserving_finish340_split_motion_legacy_plan.yaml
+  sha256: 8a48843bcc5377eacfe7317ebc17df6bd2c79d7dc31ce3d4eb71c3f00356841a
+safety:
+  trajectory_start_tolerance_rad: 0.01
+  dry_run_required: true
+  execute_flag_required: true
+  final_execute_permission: MANUAL_FOR_SAFETY
+  rviz_final_confirmation: MANUAL_FOR_SAFETY
+  current_state_source: move_group.getCurrentJointValues()
+  trajectory_start_source: trajectory.points.front().positions
+  joint_name_mapping_required: true
+  start_difference_exceeded_action: REFUSE_AND_RETURN_2
+  dry_run_without_execute_flag: true
+  confirmation_string: EXECUTE TEST9 TRAJECTORY
+  confirmation_mismatch_action: CANCEL_WITHOUT_EXECUTION
+  start_state_overwritten_with_current_state: true
+  execution_call: move_group.execute(plan)
+  post_execute_stop: true
+unknown:
+- 'actual-grasp collision scanを当時生成した正確なshell commandと全parameterは未確定。
+
+  '
+- '476点Legacy Planを内蔵PCへ転送し実機Executeした瞬間の正確なshell commandは未確定。
+
+  '
+scripts:
+  main_generation:
+  - name: build_current_full_fold_pose.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/build_current_full_fold_pose.py
+    git: TRACKED
+    sha256: 9e5dc065e7984c3f68093029ae300fcd304e2e73109f1ae69e1f62d7e7a56f84
+  - name: cobotta_apply_local_z_offset.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_apply_local_z_offset.py
+    git: TRACKED
+    sha256: ae28c12760494436ec848a6d0f8c0e7fc31bbc22c8e4669a06a246b6fd1e2d19
+  - name: cobotta_apply_actual_grasp_offset.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_apply_actual_grasp_offset.py
+    git: TRACKED
+    sha256: 56227fc3e93edae0e8345122ebc71a6bb3bb3c73dbf0fe84ca15673af8ac0294
+  - name: cobotta_branch_preserving_finish_search.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_branch_preserving_finish_search.py
+    git: TRACKED
+    sha256: 9588c06c2f1e7112c842e968028c1948bcae3b60ae4c0ab77746ba740d7c8d9f
+  - name: cobotta_build_branch_preserving_full_path.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_build_branch_preserving_full_path.py
+    git: TRACKED
+    sha256: 09b5e3f2c37585d441d1b3f590f0d74435bc14e335ec0bd407bbbdfe49527bc0
+  - name: cobotta_build_edge_fixed_full_path.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_build_edge_fixed_full_path.py
+    git: TRACKED
+    sha256: e51a9a9ddc61519b74e907e0ce43b222e3e5a26c0308c258fc072e3c0b8ea9fc
+  - name: cobotta_split_orientation_paper_move_diagnostic.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_split_orientation_paper_move_diagnostic.py
+    git: TRACKED
+    sha256: 8ff0648d317568a67f78e6d9450a4d1969335094d2f07fd1d7c08907aaef9bd5
+  - name: cobotta_build_split_motion_full_path.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_build_split_motion_full_path.py
+    git: TRACKED
+    sha256: 5bc7e39210bf5e919e9b663511cb3d026d0a8a97fb41615c5a510e3b34072f2f
+  - name: cobotta_joint_path_to_robot_trajectory.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_joint_path_to_robot_trajectory.py
+    git: TRACKED
+    sha256: 6ab78df0557b5d444d58472faaf8f092f76d94d5186b609c9c337687c838529b
+  main_validation:
+  - name: cobotta_validate_branch_preserving_full_path.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_validate_branch_preserving_full_path.py
+    git: TRACKED
+    sha256: 046e3ccc7032f7349d4836596d6133d53be5444d4b3989f4936383feb2006ac2
+  - name: cobotta_validate_edge_fixed_full_path.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_validate_edge_fixed_full_path.py
+    git: TRACKED
+    sha256: a2fb8ee20cb8b034b8799714df0647978e6713a8c9af848e8093bb1ce84b4aa9
+  - name: cobotta_validate_joint_path_collision.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_validate_joint_path_collision.py
+    git: TRACKED
+    sha256: 0605e4164855f03d34c8eb7c30f3d81b5f42d8aaa081430896ce7b441049db8f
+  - name: validate_combined_robot_trajectory.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/validate_combined_robot_trajectory.py
+    git: TRACKED
+    sha256: 2643403faa973b039db5efd222396850122fe8b6ff252ce0c436e8d6234f8628
+  common:
+  - name: trajectory_yaml_io.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/trajectory_yaml_io.py
+    git: TRACKED
+    sha256: f5cca428f0657570a5dc2f4d0f7fb0d3b71b9de78ce96e6b911299e3317ca401
+  - name: convert_combined_trajectory_to_legacy_plan.py
+    path: /home/maeda/catkin_ws/src/dummy_ros1_driver/convert_combined_trajectory_to_legacy_plan.py
+    git: TRACKED
+    sha256: 68c2509f230809824aa289059acec2744118797b615226ea5a48d41dab4010fe
+  approach:
+  - name: cobotta_generate_current_to_safezero.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_generate_current_to_safezero.py
+    git: TRACKED
+    sha256: a3a81c2aee0425ecd259eb8bdad8655f51f86f57c4b92e031718f16b08967a05
+  - name: cobotta_generate_safezero_to_finish340_start.py
+    path: /home/maeda/catkin_ws/src/origami_grasp_bridge/scripts/cobotta_generate_safezero_to_finish340_start.py
+    git: TRACKED
+    sha256: 11bde2717dc228b453d45a3d9f8d78be86688fedd873daae57b49da785cdf93b
+reverse_generation:
+  status: RECOVERED_INLINE
+  repository_script: false
+  operation: 元400点をindex399→0へ反転し、Pose/Quaternionは変更せず、時刻を新START=0から再設定する
+  note: Phase 1-Aで当時提示されたinline Python処理を回収済み。専用repo scriptは存在しない。
+real_robot_executor:
+  host: COBOTTA internal PC
+  environment: Ubuntu 16.04 / ROS Kinetic
+  source:
+    path: /root/ros_ws/src/moveit_tutorials/doc/move_group_interface/src/test9_trajectory_executor.cpp
+    sha256: 99aab0260d2fa020b6b91e2e48862be1f7b90c682b729d027e8e723bb7dcd309
+    status: VERIFIED_ON_INTERNAL_PC
+  binary:
+    path: /root/ros_ws/devel/lib/moveit_tutorials/test9_trajectory_executor
+    sha256: 4015bf0f854e0eb5657ea81b0479ebfae1f241724ff2be7c5a25eeaaef8a87d5
+    status: VERIFIED_ON_INTERNAL_PC
+  trajectory_point_limit:
+    minimum: 2
+    maximum: 512
+validation_baseline:
+  provenance: VERIFIED_IN_PHASE1A_DO_NOT_RERUN_FOR_BASELINE_FIX
+  final_joint_path:
+    points: 476
+    max_adjacent_joint_change_deg: 0.878964
+    max_adjacent_joint_change_joint: J6
+  collision:
+    saved_points: 476
+    checked_robot_states_with_interpolation: 787
+    invalid_states: 0
+    interpolation_max_joint_step_rad: 0.01
+  robot_trajectory:
+    points: 476
+    total_time_s: 55.090412405
+    velocity_scaling: 0.1
+    acceleration_scaling: 0.1
+    time_parameterization: MoveIt iterative_time_parameterization
+  robottrajectory_to_legacy:
+    points: 476
+    positions_mismatch: 0
+    velocities_mismatch: 0
+    accelerations_mismatch: 0
+    effort_mismatch: 0
+    time_from_start_mismatch: 0
+    result: FULL_MATCH
+real_robot_result:
+  provenance: EXISTING_FINISH340_REAL_ROBOT_SUCCESS_RESULT
+  trajectory_points: 476
+  trajectory_completed: true
+  final_joint_max_error_rad: 1.8803447e-05
+  grasp_point_3d_error_mm: 0.0030167
+  result: REAL_ROBOT_COMPLETED
+golden_inputs:
+- role: unity_position_input
+  path: /home/maeda/20230214OrigamiSim/TrajectoryOutput/vertex_2_grasp_20mm_20260817_160945.csv
+  sha256: 8f5c27dbfd894bde91a5d617c32e41b75767de0b3dfa2193b6ce0bf7769ce9a8
+  status: VERIFIED
+- role: orientation_bag_input
+  path: /home/maeda/test9_full_fold_pose_directionA_20260817.bag
+  sha256: ee620129193719a6326ee2d5be47f6f3d441a193515a5ce179f1d12dd6c8e81e
+  status: VERIFIED
+- role: full_pose_400
+  path: /home/maeda/directionA_full_fold_current_pose_20260817_160945_multidof.yaml
+  sha256: eb9a2abb71d420bb681af0697739ed9a951af3a10a2248bcd170b3fc8b0e8139
+  status: VERIFIED
+- role: reverse_pose
+  path: /home/maeda/directionA_reverse_full_fold_current_pose_20260817_160945_multidof.yaml
+  sha256: 935a057565d58e07747c7d6641e629067003198e5b1199651cb5415749760ff3
+  status: VERIFIED
+- role: reverse_local_z_m25
+  path: /home/maeda/directionA_reverse_local_z_m25_multidof.yaml
+  sha256: b22454bb48924167ec2ccd1f16325466d928319e028dc4f77cee276f3bf19be3
+  status: VERIFIED
+operation_responsibility:
+- process: Unity入力・対象軌道の選択
+  classification: MANUAL
+  note: 折形・入力対象を人が選択する
+- process: reverse生成
+  classification: AUTO
+  note: 処理自体は自動。現状はRECOVERED_INLINE処理
+- process: local-Z / actual-grasp補正
+  classification: AUTO
+- process: branch-preserving探索
+  classification: AUTO
+  note: FINISH340 Golden Baselineでは結果を固定し再探索しない
+- process: FINISH採用判断
+  classification: FIXED
+  note: 正式FINISHはindex340
+- process: edge refinement
+  classification: AUTO
+- process: Split-Motion生成
+  classification: AUTO
+- process: Collision validation
+  classification: AUTO
+- process: RobotTrajectory生成
+  classification: AUTO
+- process: Legacy変換
+  classification: AUTO
+- process: RViz最終確認
+  classification: MANUAL_FOR_SAFETY
+- process: 内蔵PCへの軌道転送
+  classification: MANUAL
+  future_classification: FUTURE_AUTO
+- process: dry-run
+  classification: MANUAL_TRIGGER_AUTO_CHECK
+  note: 人が起動し、開始差等はexecutorが自動判定する
+- process: 実機Execute最終許可
+  classification: MANUAL_FOR_SAFETY
+  note: 自動化しない
+- process: 許可後の軌道実行
+  classification: AUTO
