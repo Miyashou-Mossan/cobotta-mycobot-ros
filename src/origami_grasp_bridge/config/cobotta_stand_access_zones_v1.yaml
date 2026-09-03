@@ -1,0 +1,41 @@
+version: 1
+
+stand: base_up
+
+# 把持位置を考えるための簡易2次元モデル。
+# base_up.STLそのものを置き換えるものではない。
+purpose: cobotta_grasp_access_planning
+
+coordinate_system:
+  name: base_up_top_xz
+  unit: mm
+  x_axis: "base_up.STL X direction"
+  y_axis: "base_up.STL Z direction"
+  origin: "base_up top-view corner at X=0, Z=0"
+
+stand_top:
+  size_x: 150.0
+  size_y: 150.0
+
+# 台が存在せず、COBOTTAが紙へ横からアクセスできる
+# 可能性がある領域。
+#
+# 現段階では実CAD境界を完全再現せず、
+# 切り欠きを安全側に単純な三角形として近似する。
+access_zones:
+
+  lower:
+    vertices:
+      - [0.0, 0.0]
+      - [55.0, 0.0]
+      - [0.0, 55.0]
+
+  upper:
+    vertices:
+      - [0.0, 150.0]
+      - [55.0, 150.0]
+      - [0.0, 95.0]
+
+status:
+  geometry: provisional_simplified
+  note: "55 mm is a conservative simplified value based on the approximately 56.569 mm CAD cut-away extent."
