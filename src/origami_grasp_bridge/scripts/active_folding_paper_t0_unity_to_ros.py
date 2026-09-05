@@ -24,7 +24,8 @@ class ActiveFoldingPaperT0UnityToRos:
         self.publisher = rospy.Publisher(
             self.output_topic,
             PolygonStamped,
-            queue_size=1
+            queue_size=1,
+            latch=True
         )
 
         self.subscriber = rospy.Subscriber(

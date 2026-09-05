@@ -3,11 +3,12 @@
 import math
 
 import rospy
-from geometry_msgs.msg import Pose, PoseArray
+from geometry_msgs.msg import Pose, PoseArray, PolygonStamped
 
 
 class ActivePaperPoseHistoryUnityToRos:
     def __init__(self):
+        self.latest_t0_stamp = None
         self.input_topic = rospy.get_param(
             "~input_topic",
             "/origami/active_paper_pose_history_unity"
@@ -26,13 +27,21 @@ class ActivePaperPoseHistoryUnityToRos:
         self.publisher = rospy.Publisher(
             self.output_topic,
             PoseArray,
-            queue_size=1
+            queue_size=1,
+            latch=True
         )
 
         self.subscriber = rospy.Subscriber(
             self.input_topic,
             PoseArray,
             self.callback,
+            queue_size=1
+        )
+
+        self.t0_subscriber = rospy.Subscriber(
+            "/origami/active_folding_paper_t0_ros",
+            PolygonStamped,
+            self.t0_callback,
             queue_size=1
         )
 
@@ -89,10 +98,20 @@ class ActivePaperPoseHistoryUnityToRos:
 
         return ros_pose
 
+    def t0_callback(self, msg):
+        self.latest_t0_stamp = msg.header.stamp
+
     def callback(self, unity_msg):
         ros_msg = PoseArray()
 
-        ros_msg.header.stamp = rospy.Time.now()
+        if self.latest_t0_stamp is None:
+            rospy.logwarn(
+                "Pose history received before T0; "
+                "trajectory is not published."
+            )
+            return
+
+        ros_msg.header.stamp = self.latest_t0_stamp
         ros_msg.header.frame_id = self.output_frame
 
         try:

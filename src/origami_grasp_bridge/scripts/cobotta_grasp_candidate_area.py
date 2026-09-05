@@ -302,10 +302,10 @@ class CobottaGraspCandidateArea:
         )
 
     @staticmethod
-    def make_polygon_message(points_mm):
+    def make_polygon_message(points_mm, stamp):
         msg = PolygonStamped()
 
-        msg.header.stamp = rospy.Time.now()
+        msg.header.stamp = stamp
         msg.header.frame_id = "paper_center"
 
         for x_mm, y_mm in points_mm:
@@ -339,11 +339,11 @@ class CobottaGraspCandidateArea:
         )
 
         self.upper_pub.publish(
-            self.make_polygon_message(upper)
+            self.make_polygon_message(upper, paper_msg.header.stamp)
         )
 
         self.lower_pub.publish(
-            self.make_polygon_message(lower)
+            self.make_polygon_message(lower, paper_msg.header.stamp)
         )
 
         # 紙端とACCESS ZONE端から安全マージンを取る
@@ -373,11 +373,11 @@ class CobottaGraspCandidateArea:
         )
 
         self.safe_upper_pub.publish(
-            self.make_polygon_message(safe_upper)
+            self.make_polygon_message(safe_upper, paper_msg.header.stamp)
         )
 
         self.safe_lower_pub.publish(
-            self.make_polygon_message(safe_lower)
+            self.make_polygon_message(safe_lower, paper_msg.header.stamp)
         )
 
         rospy.loginfo(
