@@ -1,0 +1,109 @@
+<launch>
+
+  <arg name="relative_tolerance"
+       default="2e-5" />
+
+  <!-- 1. 指定した相対閾値でSAFE AREAを生成 -->
+  <node pkg="origami_grasp_bridge"
+        type="cobotta_polygon_tolerance_case_publisher.py"
+        name="tolerance_case_area"
+        output="screen">
+
+    <param name="relative_tolerance"
+           value="$(arg relative_tolerance)" />
+  </node>
+
+
+  <!-- 2. 診断用SAFE AREAからP0を生成 -->
+  <node pkg="origami_grasp_bridge"
+        type="cobotta_p0_candidates.py"
+        name="tolerance_case_p0"
+        output="screen">
+
+    <remap
+      from="/origami/safe_grasp_area_upper"
+      to="/origami/diagnostic/tolerance_case/safe_grasp_area_upper" />
+
+    <remap
+      from="/origami/safe_grasp_area_lower"
+      to="/origami/diagnostic/tolerance_case/safe_grasp_area_lower" />
+
+    <remap
+      from="/origami/cobotta_p0_candidates_upper"
+      to="/origami/diagnostic/tolerance_case/p0_upper" />
+
+    <remap
+      from="/origami/cobotta_p0_candidates_lower"
+      to="/origami/diagnostic/tolerance_case/p0_lower" />
+
+    <remap
+      from="/origami/cobotta_p0_candidate_markers"
+      to="/origami/diagnostic/tolerance_case/p0_markers" />
+  </node>
+
+
+  <!-- 3. 全P0についてPRE-GRASP生成 -->
+  <node pkg="origami_grasp_bridge"
+        type="cobotta_pregrasp_candidates.py"
+        name="tolerance_case_pregrasp"
+        output="screen">
+
+    <param name="side"
+           value="lower" />
+
+    <param name="all_p0"
+           value="true" />
+
+    <remap
+      from="/origami/cobotta_p0_candidates_lower"
+      to="/origami/diagnostic/tolerance_case/p0_lower" />
+
+    <remap
+      from="/origami/debug/cobotta_pregrasp_candidate_poses"
+      to="/origami/diagnostic/tolerance_case/pre" />
+
+    <remap
+      from="/origami/debug/cobotta_grasp_candidate_poses"
+      to="/origami/diagnostic/tolerance_case/grasp" />
+
+    <remap
+      from="/origami/debug/cobotta_pregrasp_candidates"
+      to="/origami/diagnostic/tolerance_case/pregrasp_markers" />
+
+    <remap
+      from="/origami/debug/cobotta_pregrasp_batch"
+      to="/origami/diagnostic/tolerance_case/batch" />
+
+    <remap
+      from="/origami/debug/cobotta_pregrasp_feasibility_done"
+      to="/origami/diagnostic/tolerance_case/done" />
+  </node>
+
+
+  <!-- 4. PRE→P0のIK / Collision評価 -->
+  <node pkg="origami_grasp_bridge"
+        type="cobotta_pregrasp_feasibility_diagnostic.py"
+        name="tolerance_case_feasibility"
+        output="screen">
+
+    <param name="steps"
+           value="30" />
+
+    <remap
+      from="/origami/debug/cobotta_pregrasp_candidate_poses"
+      to="/origami/diagnostic/tolerance_case/pre" />
+
+    <remap
+      from="/origami/debug/cobotta_grasp_candidate_poses"
+      to="/origami/diagnostic/tolerance_case/grasp" />
+
+    <remap
+      from="/origami/debug/cobotta_pregrasp_batch"
+      to="/origami/diagnostic/tolerance_case/batch" />
+
+    <remap
+      from="/origami/debug/cobotta_pregrasp_feasibility_done"
+      to="/origami/diagnostic/tolerance_case/done" />
+  </node>
+
+</launch>
