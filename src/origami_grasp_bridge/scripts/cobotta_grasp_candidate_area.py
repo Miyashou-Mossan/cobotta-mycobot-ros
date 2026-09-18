@@ -125,6 +125,68 @@ def shrink_convex_polygon(poly, margin):
     return result
 
 
+
+def normalize_polygon(points, relative_tolerance=1.0e-5):
+    """
+    Polygon演算の数値誤差によって生じる、
+    幾何学的に同一点とみなせる隣接頂点を除去する。
+
+    tolerance:
+        PolygonのBounding Box長辺 L に対して
+        epsilon = L * relative_tolerance
+
+    default:
+        relative_tolerance = 1e-5 = 0.001 %
+
+    P0候補自体を間引くための処理ではなく、
+    Polygon表現上の数値的な重複だけを除去する。
+    """
+    if len(points) < 2:
+        return list(points)
+
+    min_x = min(p[0] for p in points)
+    max_x = max(p[0] for p in points)
+    min_y = min(p[1] for p in points)
+    max_y = max(p[1] for p in points)
+
+    characteristic_length = max(
+        max_x - min_x,
+        max_y - min_y
+    )
+
+    if characteristic_length <= 0.0:
+        return list(points)
+
+    tolerance = (
+        characteristic_length
+        * relative_tolerance
+    )
+
+    def distance(a, b):
+        return math.hypot(
+            a[0] - b[0],
+            a[1] - b[1]
+        )
+
+    normalized = []
+
+    # 隣接するほぼ同一点を除去
+    for point in points:
+        if (
+            not normalized
+            or distance(normalized[-1], point) >= tolerance
+        ):
+            normalized.append(point)
+
+    # Polygonの末尾が始点とほぼ同じ場合は末尾を除去
+    if (
+        len(normalized) >= 2
+        and distance(normalized[0], normalized[-1]) < tolerance
+    ):
+        normalized.pop()
+
+    return normalized
+
 def clip_polygon(subject, clipper):
     if len(subject) < 3 or len(clipper) < 3:
         return []
@@ -175,7 +237,7 @@ def clip_polygon(subject, clipper):
 
             s = e
 
-    return output
+    return normalize_polygon(output)
 
 
 class CobottaGraspCandidateArea:
@@ -213,11 +275,12 @@ class CobottaGraspCandidateArea:
         self.center_x = size_x / 2.0
         self.center_y = size_y / 2.0
 
-        # 暫定安全マージン [mm]
+        # 紙端からの固定marginは設けない。
+        # 把持成立性は実際のグリッパ形状・接触条件で別途判定する。
         self.paper_margin_mm = float(
             rospy.get_param(
                 "~paper_margin_mm",
-                5.0
+                0.0
             )
         )
 

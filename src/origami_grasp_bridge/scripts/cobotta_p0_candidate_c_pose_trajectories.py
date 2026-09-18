@@ -26,11 +26,7 @@ class CobottaP0CandidateCPoseTrajectories:
 
         # cobotta_tool_link -> actual_grasp_point
         # FINISH340で使用していた実測オフセット [m]
-        self.r_grasp = np.array([
-            +0.000401,
-            -0.001507,
-            -0.004894,
-        ], dtype=float)
+        self.r_grasp = np.array([0.002000, 0.000000, -0.004894], dtype=float)
 
         self.trajectory_publishers = {}
 

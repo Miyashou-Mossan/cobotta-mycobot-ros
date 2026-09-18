@@ -299,7 +299,7 @@
 
   <link name="cobotta_left_finger">
     <visual>
-      <origin xyz="-0.0065 0 -0.015" rpy="-1.5708 0 0"/>
+      <origin xyz="-0.0050 0.00165915 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
         <mesh
           filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4_right.STL"
@@ -307,7 +307,7 @@
       </geometry>
     </visual>
     <collision>
-      <origin xyz="-0.0065 0 -0.015" rpy="-1.5708 0 0"/>
+      <origin xyz="-0.0050 0.00165915 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
         <mesh
           filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4_right.STL"
@@ -341,7 +341,7 @@
   </transmission>
   <link name="cobotta_right_finger">
     <visual>
-      <origin xyz="-0.0065 0 -0.015" rpy="-1.5708 0 0"/>
+      <origin xyz="-0.0050 0.00165915 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
         <mesh
           filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"
@@ -349,7 +349,7 @@
       </geometry>
     </visual>
     <collision>
-      <origin xyz="-0.0065 0 -0.015" rpy="-1.5708 0 0"/>
+      <origin xyz="-0.0050 0.00165915 -0.015" rpy="-1.5708 0 0"/>
       <geometry>
         <mesh
           filename="package://dual_robot_description/meshes/cobotta/COBOTTA_gripper_4.STL"

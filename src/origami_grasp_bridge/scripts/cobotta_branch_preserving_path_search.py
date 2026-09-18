@@ -50,11 +50,7 @@ DEFAULT_INITIAL_Y_DEG = 0.0
 
 # actual_grasp_point offset:
 # cobotta_tool_link -> actual_grasp_point [m]
-DEFAULT_R_GRASP = [
-    +0.000401,
-    -0.001507,
-    -0.004894,
-]
+DEFAULT_R_GRASP = [0.002000, 0.000000, -0.004894]
 
 # branch-preserving探索のデフォルト設定
 DEFAULT_X_ANGLE_LIMIT = 30.0
