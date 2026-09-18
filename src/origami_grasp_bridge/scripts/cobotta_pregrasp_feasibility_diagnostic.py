@@ -9,6 +9,7 @@ import rospy
 import moveit_commander
 
 from geometry_msgs.msg import PoseArray, PoseStamped
+from std_msgs.msg import UInt64MultiArray
 from moveit_msgs.msg import (
     MoveItErrorCodes,
     PlanningSceneComponents,
@@ -37,6 +38,16 @@ GRASP_TOPIC = (
     "cobotta_grasp_candidate_poses"
 )
 
+BATCH_TOPIC = (
+    "/origami/debug/"
+    "cobotta_pregrasp_batch"
+)
+
+DONE_TOPIC = (
+    "/origami/debug/"
+    "cobotta_pregrasp_feasibility_done"
+)
+
 LOCAL_PAPER_OBJECT = (
     "cobotta_local_grasp_paper_collision"
 )
@@ -60,7 +71,10 @@ class Diagnostic:
 
         self.pre_msg = None
         self.grasp_msg = None
-        self.done = False
+        self.batch_msg = None
+
+        self.processing = False
+        self.last_processed_key = None
 
         self.robot = (
             moveit_commander.RobotCommander()
@@ -105,6 +119,20 @@ class Diagnostic:
             persistent=True,
         )
 
+        self.done_pub = rospy.Publisher(
+            DONE_TOPIC,
+            UInt64MultiArray,
+            queue_size=1,
+            latch=False,
+        )
+
+        rospy.Subscriber(
+            BATCH_TOPIC,
+            UInt64MultiArray,
+            self.batch_cb,
+            queue_size=1,
+        )
+
         rospy.Subscriber(
             PRE_TOPIC,
             PoseArray,
@@ -122,6 +150,10 @@ class Diagnostic:
         rospy.loginfo(
             "Waiting for PRE-GRASP candidates..."
         )
+
+    def batch_cb(self, msg):
+        self.batch_msg = msg
+        self.try_run()
 
     def pre_cb(self, msg):
         self.pre_msg = msg
@@ -899,16 +931,68 @@ class Diagnostic:
         )
 
     def try_run(self):
-        if self.done:
+        if self.processing:
             return
 
         if (
             self.pre_msg is None
             or self.grasp_msg is None
+            or self.batch_msg is None
         ):
             return
 
-        self.done = True
+        if len(self.batch_msg.data) != 3:
+            return
+
+        # PREとGRASPは同じtimestampでなければならない
+        if (
+            self.pre_msg.header.stamp
+            != self.grasp_msg.header.stamp
+        ):
+            return
+
+        p0_index = int(
+            self.batch_msg.data[0]
+        )
+
+        batch_secs = int(
+            self.batch_msg.data[1]
+        )
+
+        batch_nsecs = int(
+            self.batch_msg.data[2]
+        )
+
+        # Batch metadataとPoseArrayのtimestampを照合
+        if (
+            self.pre_msg.header.stamp.secs
+            != batch_secs
+            or
+            self.pre_msg.header.stamp.nsecs
+            != batch_nsecs
+        ):
+            return
+
+        batch_key = (
+            p0_index,
+            batch_secs,
+            batch_nsecs,
+        )
+
+        if (
+            batch_key
+            == self.last_processed_key
+        ):
+            return
+
+        self.processing = True
+
+        print()
+        print(
+            "P0 index           : {}".format(
+                p0_index
+            )
+        )
 
         if self.local_paper_exists():
             print()
@@ -922,6 +1006,7 @@ class Diagnostic:
             print(
                 "Remove it before this test."
             )
+            self.processing = False
             return
 
         if (
@@ -931,6 +1016,7 @@ class Diagnostic:
             print(
                 "ERROR: candidate counts differ."
             )
+            self.processing = False
             return
 
         count = len(
@@ -977,6 +1063,7 @@ class Diagnostic:
                 "ERROR: candidate count must be even "
                 "(N+/N- pairs)."
             )
+            self.processing = False
             return
 
         print()
@@ -1185,6 +1272,29 @@ class Diagnostic:
             print(
                 "This does NOT prove infeasibility."
             )
+
+        # このP0の診断完了を記録してCandidate側へACK
+        self.last_processed_key = batch_key
+        self.processing = False
+
+        done_msg = UInt64MultiArray()
+        done_msg.data = [
+            int(p0_index),
+            int(batch_secs),
+            int(batch_nsecs),
+        ]
+
+        self.done_pub.publish(
+            done_msg
+        )
+
+        print()
+        print(
+            "Published feasibility DONE: "
+            "P0[{}]".format(
+                p0_index
+            )
+        )
 
 
 def main():

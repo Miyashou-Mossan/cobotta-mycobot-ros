@@ -14,6 +14,7 @@ from geometry_msgs.msg import (
 )
 from tf.transformations import quaternion_from_matrix
 from visualization_msgs.msg import Marker, MarkerArray
+from std_msgs.msg import UInt64MultiArray
 
 
 PAPER_TOPIC = "/origami/active_folding_paper_t0_ros"
@@ -28,6 +29,16 @@ GRASP_POSE_TOPIC = (
 
 MARKER_TOPIC = (
     "/origami/debug/cobotta_pregrasp_candidates"
+)
+
+BATCH_TOPIC = (
+    "/origami/debug/"
+    "cobotta_pregrasp_batch"
+)
+
+DONE_TOPIC = (
+    "/origami/debug/"
+    "cobotta_pregrasp_feasibility_done"
 )
 
 # cobotta_tool_link -> actual_grasp_point [m]
@@ -56,9 +67,24 @@ class PreGraspCandidates:
             )
         )
 
+        self.all_p0 = bool(
+            rospy.get_param(
+                "~all_p0",
+                False,
+            )
+        )
+
+        # all_p0では必ずP0[0]から開始する
+        if self.all_p0:
+            self.p0_index = 0
+
         self.paper_msg = None
         self.p0_msg = None
         self.done = False
+
+        # 現在Feasibility結果を待っている
+        # P0 batchのtimestamp
+        self.current_batch_stamp = None
 
         self.pre_pub = rospy.Publisher(
             PRE_POSE_TOPIC,
@@ -81,6 +107,13 @@ class PreGraspCandidates:
             latch=True,
         )
 
+        self.batch_pub = rospy.Publisher(
+            BATCH_TOPIC,
+            UInt64MultiArray,
+            queue_size=1,
+            latch=True,
+        )
+
         rospy.Subscriber(
             PAPER_TOPIC,
             PolygonStamped,
@@ -97,8 +130,20 @@ class PreGraspCandidates:
             queue_size=1,
         )
 
+        rospy.Subscriber(
+            DONE_TOPIC,
+            UInt64MultiArray,
+            self.done_cb,
+            queue_size=1,
+        )
+
         rospy.loginfo(
             "Waiting for paper and P0..."
+        )
+
+        rospy.loginfo(
+            "all_p0 mode: %s",
+            self.all_p0,
         )
 
     def paper_cb(self, msg):
@@ -107,6 +152,82 @@ class PreGraspCandidates:
 
     def p0_cb(self, msg):
         self.p0_msg = msg
+        self.try_run()
+
+    def done_cb(self, msg):
+        if not self.all_p0:
+            return
+
+        if self.p0_msg is None:
+            return
+
+        if self.current_batch_stamp is None:
+            return
+
+        if len(msg.data) != 3:
+            rospy.logwarn(
+                "Ignoring malformed feasibility ACK."
+            )
+            return
+
+        ack_index = int(msg.data[0])
+        ack_secs = int(msg.data[1])
+        ack_nsecs = int(msg.data[2])
+
+        same_index = (
+            ack_index
+            == self.p0_index
+        )
+
+        same_stamp = (
+            ack_secs
+            == self.current_batch_stamp.secs
+            and ack_nsecs
+            == self.current_batch_stamp.nsecs
+        )
+
+        if not (
+            same_index
+            and same_stamp
+        ):
+            rospy.logwarn(
+                "Ignoring feasibility ACK: "
+                "received=(P0[%d], %d.%09d) "
+                "current=(P0[%d], %d.%09d)",
+                ack_index,
+                ack_secs,
+                ack_nsecs,
+                self.p0_index,
+                self.current_batch_stamp.secs,
+                self.current_batch_stamp.nsecs,
+            )
+            return
+
+        total = len(
+            self.p0_msg.poses
+        )
+
+        rospy.loginfo(
+            "P0[%d] feasibility completed.",
+            self.p0_index,
+        )
+
+        if self.p0_index + 1 >= total:
+            rospy.loginfo(
+                "ALL P0 COMPLETE: %d/%d",
+                total,
+                total,
+            )
+            return
+
+        self.p0_index += 1
+        self.done = False
+
+        rospy.loginfo(
+            "Proceeding to P0[%d].",
+            self.p0_index,
+        )
+
         self.try_run()
 
     @staticmethod
@@ -408,6 +529,11 @@ class PreGraspCandidates:
         pre_array.header.frame_id = frame_id
         pre_array.header.stamp = rospy.Time.now()
 
+        # このstampと一致するACKだけ受理する
+        self.current_batch_stamp = copy.deepcopy(
+            pre_array.header.stamp
+        )
+
         grasp_array = PoseArray()
         grasp_array.header = copy.deepcopy(
             pre_array.header
@@ -630,6 +756,19 @@ class PreGraspCandidates:
                 )
 
                 candidate_id += 1
+
+        batch_msg = UInt64MultiArray()
+        batch_msg.data = [
+            int(self.p0_index),
+            int(pre_array.header.stamp.secs),
+            int(pre_array.header.stamp.nsecs),
+        ]
+
+        # Batch情報を先にpublishし、
+        # PRE/GRASPとtimestampで対応付ける
+        self.batch_pub.publish(
+            batch_msg
+        )
 
         self.pre_pub.publish(
             pre_array

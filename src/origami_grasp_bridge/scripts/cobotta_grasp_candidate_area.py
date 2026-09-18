@@ -126,7 +126,7 @@ def shrink_convex_polygon(poly, margin):
 
 
 
-def normalize_polygon(points, relative_tolerance=1.0e-5):
+def normalize_polygon(points, relative_tolerance=3.0e-5):
     """
     Polygon演算の数値誤差によって生じる、
     幾何学的に同一点とみなせる隣接頂点を除去する。
@@ -136,7 +136,13 @@ def normalize_polygon(points, relative_tolerance=1.0e-5):
         epsilon = L * relative_tolerance
 
     default:
-        relative_tolerance = 1e-5 = 0.001 %
+        relative_tolerance = 3e-5 = 0.003 %
+
+    この値は、SAFE Polygonの数値的な閉じ点に対する
+    感度解析により設定した。
+    2e-5→3e-5で重複頂点を除去した際、
+    P0/PRE-GRASP位置・工具姿勢・IK・Collision判定に
+    実質的な影響がないことを確認している。
 
     P0候補自体を間引くための処理ではなく、
     Polygon表現上の数値的な重複だけを除去する。
