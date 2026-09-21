@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import copy
+import json
 import sys
 
 import numpy as np
@@ -9,7 +10,7 @@ import rospy
 import moveit_commander
 
 from geometry_msgs.msg import PoseArray, PoseStamped
-from std_msgs.msg import UInt64MultiArray
+from std_msgs.msg import String, UInt64MultiArray
 from moveit_msgs.msg import (
     MoveItErrorCodes,
     PlanningSceneComponents,
@@ -27,6 +28,15 @@ from urdf_parser_py.urdf import URDF
 
 GROUP = "cobotta_arm"
 TIP = "cobotta_tool_link"
+
+COBOTTA_JOINTS = [
+    "cobotta_joint_1",
+    "cobotta_joint_2",
+    "cobotta_joint_3",
+    "cobotta_joint_4",
+    "cobotta_joint_5",
+    "cobotta_joint_6",
+]
 
 PRE_TOPIC = (
     "/origami/debug/"
@@ -46,6 +56,11 @@ BATCH_TOPIC = (
 DONE_TOPIC = (
     "/origami/debug/"
     "cobotta_pregrasp_feasibility_done"
+)
+
+RESULT_TOPIC = (
+    "/origami/debug/"
+    "cobotta_pregrasp_feasibility_results"
 )
 
 LOCAL_PAPER_OBJECT = (
@@ -75,6 +90,11 @@ class Diagnostic:
 
         self.processing = False
         self.last_processed_key = None
+
+        # 現在の全P0評価結果を保持する。
+        # p0_index=0を受けた時点で新しい一連の評価として
+        # リセットする。
+        self.result_history = {}
 
         self.robot = (
             moveit_commander.RobotCommander()
@@ -124,6 +144,15 @@ class Diagnostic:
             UInt64MultiArray,
             queue_size=1,
             latch=False,
+        )
+
+        # 後段処理が利用する構造化評価結果。
+        # 最新の集約結果を後から確認できるようlatchする。
+        self.result_pub = rospy.Publisher(
+            RESULT_TOPIC,
+            String,
+            queue_size=1,
+            latch=True,
         )
 
         rospy.Subscriber(
@@ -325,6 +354,34 @@ class Diagnostic:
         )
 
         return state
+
+    def extract_cobotta_joints(self, state):
+        """
+        RobotStateからCOBOTTA J1～J6を
+        明示的な関節名に基づいて取り出す。
+        """
+        q_map = dict(zip(
+            state.joint_state.name,
+            state.joint_state.position,
+        ))
+
+        missing = [
+            name
+            for name in COBOTTA_JOINTS
+            if name not in q_map
+        ]
+
+        if missing:
+            raise RuntimeError(
+                "Missing COBOTTA joints in RobotState: "
+                + ", ".join(missing)
+            )
+
+        return [
+            float(q_map[name])
+            for name in COBOTTA_JOINTS
+        ]
+
 
     def joint_limit_check(self, state):
         q_map = dict(zip(
@@ -815,6 +872,25 @@ class Diagnostic:
             "result": "FEASIBLE_FOUND",
             "reason": "-",
             "step": self.steps,
+
+            # PRE-GRASP:
+            # 紙へ横から進入する直前の関節姿勢
+            "pregrasp_joint_names":
+                list(COBOTTA_JOINTS),
+            "pregrasp_joints_rad":
+                self.extract_cobotta_joints(
+                    states[0]
+                ),
+
+            # GRASP:
+            # P0へ到着した瞬間の関節姿勢。
+            # この状態を次の折り軌道の初期seedとして使う。
+            "grasp_joint_names":
+                list(COBOTTA_JOINTS),
+            "grasp_joints_rad":
+                self.extract_cobotta_joints(
+                    states[-1]
+                ),
         }
 
     def build_j6_flipped_states(
@@ -1273,7 +1349,174 @@ class Diagnostic:
                 "This does NOT prove infeasibility."
             )
 
+        # ----------------------------------------------------
+        # 構造化結果をpublish
+        #
+        # ここでは候補の順位付け・最適化は行わない。
+        # 現在の評価結果を機械可読な形で保存するだけ。
+        # ----------------------------------------------------
+
+        if p0_index == 0:
+            self.result_history = {}
+
+        candidate_records = []
+
+        for candidate_index, r in enumerate(results):
+            record = {
+                "candidate_index": int(
+                    candidate_index
+                ),
+                "edge": int(
+                    candidate_index // 2
+                ),
+                "normal_sign": (
+                    "N+"
+                    if candidate_index % 2 == 0
+                    else "N-"
+                ),
+                "result": str(
+                    r["result"]
+                ),
+                "reason": str(
+                    r["reason"]
+                ),
+                "step": int(
+                    r["step"]
+                ),
+            }
+
+            if (
+                r["result"] == "FEASIBLE_FOUND"
+                and "pregrasp_joints_rad" in r
+                and "grasp_joints_rad" in r
+            ):
+                record["pregrasp_joint_names"] = list(
+                    r["pregrasp_joint_names"]
+                )
+
+                record["pregrasp_joints_rad"] = [
+                    float(v)
+                    for v in r[
+                        "pregrasp_joints_rad"
+                    ]
+                ]
+
+                record["grasp_joint_names"] = list(
+                    r["grasp_joint_names"]
+                )
+
+                record["grasp_joints_rad"] = [
+                    float(v)
+                    for v in r[
+                        "grasp_joints_rad"
+                    ]
+                ]
+
+                # P0到着時のcobotta_tool_link Pose。
+                # N+ / N-ごとの工具姿勢を後段の折り軌道へ渡す。
+                grasp_pose = (
+                    self.grasp_msg.poses[
+                        candidate_index
+                    ]
+                )
+
+                record["grasp_tool_pose"] = {
+                    "frame_id": str(
+                        self.grasp_msg.header.frame_id
+                    ),
+                    "position": {
+                        "x": float(
+                            grasp_pose.position.x
+                        ),
+                        "y": float(
+                            grasp_pose.position.y
+                        ),
+                        "z": float(
+                            grasp_pose.position.z
+                        ),
+                    },
+                    "orientation": {
+                        "x": float(
+                            grasp_pose.orientation.x
+                        ),
+                        "y": float(
+                            grasp_pose.orientation.y
+                        ),
+                        "z": float(
+                            grasp_pose.orientation.z
+                        ),
+                        "w": float(
+                            grasp_pose.orientation.w
+                        ),
+                    },
+                }
+
+            candidate_records.append(
+                record
+            )
+
+        p0_record = {
+            "p0_index": int(
+                p0_index
+            ),
+            "batch_stamp": {
+                "secs": int(
+                    batch_secs
+                ),
+                "nsecs": int(
+                    batch_nsecs
+                ),
+            },
+            "candidate_count": int(
+                count
+            ),
+            "feasible_count": int(
+                len(success)
+            ),
+            "steps_per_candidate": int(
+                self.steps
+            ),
+            "candidates": candidate_records,
+        }
+
+        self.result_history[
+            int(p0_index)
+        ] = p0_record
+
+        aggregate = {
+            "schema_version": 1,
+            "p0_results": [
+                self.result_history[k]
+                for k in sorted(
+                    self.result_history.keys()
+                )
+            ],
+        }
+
+        result_msg = String()
+        result_msg.data = json.dumps(
+            aggregate,
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+
+        self.result_pub.publish(
+            result_msg
+        )
+
+        print()
+        print(
+            "Published structured feasibility results: "
+            "P0[{}], stored P0 count={}".format(
+                p0_index,
+                len(
+                    self.result_history
+                ),
+            )
+        )
+
         # このP0の診断完了を記録してCandidate側へACK
+        # RESULTを先にpublishし、その後DONEを送る。
         self.last_processed_key = batch_key
         self.processing = False
 

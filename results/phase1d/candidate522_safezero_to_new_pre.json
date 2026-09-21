@@ -1,0 +1,33 @@
+{
+  "candidate_index": 522,
+  "source_finish_index": 73,
+  "branch_index": 0,
+  "safezero_joints_rad": [
+    0.0,
+    0.0,
+    0.35,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "new_pre_joints_rad": [
+    -0.40486506311511916,
+    1.1019894814248983,
+    2.325791646883087,
+    2.8839426726442583,
+    1.8454683692046028,
+    -1.6422103964894275
+  ],
+  "gripper_open_m": 0.015,
+  "planning_time_sec": 10.0,
+  "planning_attempts": 20,
+  "max_interpolation_step_rad": 0.01,
+  "result": "SAFEZERO_TO_NEW_PRE_FEASIBLE",
+  "plan_points": 86,
+  "duration_sec": 43.958244064,
+  "max_end_error_rad": 7.857663049359864e-05,
+  "dense_state_count": 382,
+  "invalid_dense_index": null,
+  "contacts": [],
+  "diagnostic_elapsed_sec": 0.6773287039832212
+}
