@@ -29,6 +29,7 @@ class CobottaP0CandidateCPoseTrajectories:
         self.r_grasp = np.array([0.002000, 0.000000, -0.004894], dtype=float)
 
         self.trajectory_publishers = {}
+        self.actual_grasp_publishers = {}
 
         self.marker_pub = rospy.Publisher(
             "/origami/cobotta_p0_candidate_c_pose_markers",
@@ -162,6 +163,32 @@ class CobottaP0CandidateCPoseTrajectories:
 
         return self.trajectory_publishers[key]
 
+    def get_actual_grasp_publisher(self, side, index):
+        key = (side, index)
+
+        if key not in self.actual_grasp_publishers:
+            topic = (
+                "/origami/"
+                "cobotta_p0_candidate_c_actual_grasp_trajectory/"
+                "{}_{}".format(side, index)
+            )
+
+            self.actual_grasp_publishers[key] = (
+                rospy.Publisher(
+                    topic,
+                    PoseArray,
+                    queue_size=1,
+                    latch=True,
+                )
+            )
+
+            rospy.loginfo(
+                "Created actual grasp trajectory topic: %s",
+                topic,
+            )
+
+        return self.actual_grasp_publishers[key]
+
     def make_tool_quaternions(self, paper_poses):
         """
         現在のCandidate CをPose履歴終端の紙Poseに対する
@@ -254,6 +281,7 @@ class CobottaP0CandidateCPoseTrajectories:
         )
 
         output_poses = []
+        actual_grasp_poses = []
 
         max_grasp_reconstruction_error = 0.0
 
@@ -327,9 +355,21 @@ class CobottaP0CandidateCPoseTrajectories:
 
             output_poses.append(pose)
 
+            grasp_pose = Pose()
+
+            grasp_pose.position.x = grasp_point[0]
+            grasp_pose.position.y = grasp_point[1]
+            grasp_pose.position.z = grasp_point[2]
+
+            # actual_grasp_pointは位置情報として扱う。
+            grasp_pose.orientation.w = 1.0
+
+            actual_grasp_poses.append(grasp_pose)
+
         return (
             local_p0,
             output_poses,
+            actual_grasp_poses,
             max_grasp_reconstruction_error,
         )
 
@@ -445,6 +485,7 @@ class CobottaP0CandidateCPoseTrajectories:
             (
                 local_p0,
                 trajectory,
+                actual_grasp_trajectory,
                 reconstruction_error,
             ) = self.make_pose_trajectory(
                 p0_pose,
@@ -469,6 +510,30 @@ class CobottaP0CandidateCPoseTrajectories:
             )
 
             publisher.publish(output_msg)
+
+            actual_grasp_msg = PoseArray()
+
+            actual_grasp_msg.header.stamp = (
+                self.paper_history_msg.header.stamp
+            )
+            actual_grasp_msg.header.frame_id = (
+                "paper_center"
+            )
+
+            actual_grasp_msg.poses = (
+                actual_grasp_trajectory
+            )
+
+            actual_grasp_publisher = (
+                self.get_actual_grasp_publisher(
+                    side,
+                    index,
+                )
+            )
+
+            actual_grasp_publisher.publish(
+                actual_grasp_msg
+            )
 
             self.add_trajectory_markers(
                 marker_array,

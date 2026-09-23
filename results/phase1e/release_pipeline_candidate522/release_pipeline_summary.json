@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "pipeline_type": "generic_release_pipeline",
+  "inputs": {
+    "sequence_json": "/tmp/phase1d_generic/candidate522_generic_sequence.json",
+    "source_path_json": "/home/maeda/catkin_ws/results/phase1d/candidate522_complete_path_to_index73.json",
+    "segment_key": "fold_p0_to_finish",
+    "point_index": -1
+  },
+  "release_model": {
+    "layer_count": 4,
+    "paper_thickness_m": 0.00012,
+    "bundle_thickness_m": 0.00048,
+    "release_margin_m": 0.0005,
+    "relative_release_opening_m": 0.00098,
+    "release_opening_m": 0.00049
+  },
+  "retreat_direction": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "outputs": {
+    "clearance_json": "/home/maeda/catkin_ws/results/phase1e/release_pipeline_candidate522/release_clearance.json",
+    "retreat_json": "/home/maeda/catkin_ws/results/phase1e/release_pipeline_candidate522/release_retreat_path.json",
+    "sequence_with_release_json": "/home/maeda/catkin_ws/results/phase1e/release_pipeline_candidate522/generic_sequence_with_release.json",
+    "timed_sequence_json": "/home/maeda/catkin_ws/results/phase1e/release_pipeline_candidate522/timed/generic_sequence_timed.json"
+  }
+}

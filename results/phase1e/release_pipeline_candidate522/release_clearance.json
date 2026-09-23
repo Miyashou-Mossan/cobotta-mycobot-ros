@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "input_json": "/home/maeda/catkin_ws/results/phase1d/candidate522_complete_path_to_index73.json",
+  "segment_key": "fold_p0_to_finish",
+  "point_index": 73,
+  "frame_id": "paper_center",
+  "tip_link": "cobotta_tool_link",
+  "retreat_direction": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "retreat_distance_m": 0.00045000000000000004,
+  "search_resolution_m": 1e-05,
+  "gripper_from_m": 0.0,
+  "release_opening_m": 0.00049,
+  "relative_finger_opening_m": 0.00098,
+  "arm_joint_names": [
+    "cobotta_joint_1",
+    "cobotta_joint_2",
+    "cobotta_joint_3",
+    "cobotta_joint_4",
+    "cobotta_joint_5",
+    "cobotta_joint_6"
+  ],
+  "release_ready_joints_rad": [
+    -1.0550227656082063,
+    1.0679013016797394,
+    1.3627614538700932,
+    1.8385304283074255,
+    1.3283576443274208,
+    2.195929940460288
+  ],
+  "start_tool_pose": {
+    "frame_id": "paper_center",
+    "position_m": [
+      -0.05801053762459353,
+      -0.06096152527191118,
+      0.0049535994587102256
+    ],
+    "orientation_xyzw": [
+      0.34074248383018874,
+      -0.6253500217994429,
+      0.6341585137410354,
+      -0.3011227148496619
+    ]
+  },
+  "release_ready_tool_pose": {
+    "frame_id": "paper_center",
+    "position_m": [
+      -0.058010537568489895,
+      -0.06096152504854113,
+      0.005403599401793746
+    ],
+    "orientation_xyzw": [
+      0.3407424670561905,
+      -0.6253500250936102,
+      0.6341585272056665,
+      -0.30112269863333474
+    ]
+  }
+}
